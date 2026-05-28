@@ -1,29 +1,20 @@
 // Live scoreboard storage.
 //
-// In production on Vercel: add a KV (Upstash Redis) store and connect it to the
-// project — Vercel injects KV_REST_API_URL / KV_REST_API_TOKEN automatically and
-// scores become shared + real-time across every device.
+// Production: Vercel Blob — a single JSON document at `campdalto/scores.json`.
+// Reads list the blob and fetch its body; writes overwrite the same pathname.
+// Note: Blob is not atomic, so concurrent admin writes can race. Fine for one
+// Commissioner; risky if multiple people edit simultaneously.
 //
-// In local dev (or before KV is connected): falls back to an in-memory store so
-// everything still works. Note: in-memory state is per-process, so it resets on
-// restart and won't sync across serverless instances — that's why KV matters in prod.
+// Local dev (or when BLOB_READ_WRITE_TOKEN is unset): falls back to an
+// in-memory store. Per-process state, resets on restart.
 
 import { TEAMS } from "@/lib/content";
 
 type Scores = Record<string, number>;
 
-const KEY = "campdalto:scores";
-const hasKV = Boolean(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
+const BLOB_PATH = "campdalto/scores.json";
+const hasBlob = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 
-// Lazy-load @vercel/kv only when configured, so local dev doesn't need it.
-let kvClient: typeof import("@vercel/kv").kv | null = null;
-async function getKV() {
-  if (!hasKV) return null;
-  if (!kvClient) kvClient = (await import("@vercel/kv")).kv;
-  return kvClient;
-}
-
-// In-memory fallback for local dev.
 const memory: Scores = {};
 
 function withDefaults(partial: Scores): Scores {
@@ -32,36 +23,69 @@ function withDefaults(partial: Scores): Scores {
   return out;
 }
 
-export async function getScores(): Promise<Scores> {
-  const kv = await getKV();
-  if (kv) {
-    const stored = (await kv.hgetall<Scores>(KEY)) ?? {};
+async function readFromBlob(): Promise<Scores> {
+  const { list } = await import("@vercel/blob");
+  const { blobs } = await list({ prefix: BLOB_PATH });
+  const entry = blobs.find((b) => b.pathname === BLOB_PATH);
+  if (!entry) return {};
+  const res = await fetch(entry.url, { cache: "no-store" });
+  if (!res.ok) return {};
+  try {
+    const data = (await res.json()) as Scores;
     const normalized: Scores = {};
-    for (const k of Object.keys(stored)) normalized[k] = Number(stored[k]) || 0;
-    return withDefaults(normalized);
+    for (const k of Object.keys(data)) normalized[k] = Number(data[k]) || 0;
+    return normalized;
+  } catch {
+    return {};
   }
+}
+
+async function writeToBlob(scores: Scores): Promise<void> {
+  const { put } = await import("@vercel/blob");
+  await put(BLOB_PATH, JSON.stringify(scores), {
+    access: "public",
+    addRandomSuffix: false,
+    allowOverwrite: true,
+    contentType: "application/json",
+    cacheControlMaxAge: 0,
+  });
+}
+
+export async function getScores(): Promise<Scores> {
+  if (hasBlob) return withDefaults(await readFromBlob());
   return withDefaults(memory);
 }
 
 export async function adjustScore(teamId: string, delta: number): Promise<Scores> {
   const d = Math.round(delta);
-  const kv = await getKV();
-  if (kv) await kv.hincrby(KEY, teamId, d);
-  else memory[teamId] = (memory[teamId] ?? 0) + d;
-  return getScores();
+  if (hasBlob) {
+    const current = await readFromBlob();
+    const next = { ...current, [teamId]: (current[teamId] ?? 0) + d };
+    await writeToBlob(next);
+    return withDefaults(next);
+  }
+  memory[teamId] = (memory[teamId] ?? 0) + d;
+  return withDefaults(memory);
 }
 
 export async function setScore(teamId: string, value: number): Promise<Scores> {
   const v = Math.round(value);
-  const kv = await getKV();
-  if (kv) await kv.hset(KEY, { [teamId]: v });
-  else memory[teamId] = v;
-  return getScores();
+  if (hasBlob) {
+    const current = await readFromBlob();
+    const next = { ...current, [teamId]: v };
+    await writeToBlob(next);
+    return withDefaults(next);
+  }
+  memory[teamId] = v;
+  return withDefaults(memory);
 }
 
 export async function resetScores(): Promise<Scores> {
-  const kv = await getKV();
-  if (kv) await kv.hset(KEY, Object.fromEntries(TEAMS.map((t) => [t.id, 0])));
-  else for (const t of TEAMS) memory[t.id] = 0;
-  return getScores();
+  const zeroed: Scores = Object.fromEntries(TEAMS.map((t) => [t.id, 0]));
+  if (hasBlob) {
+    await writeToBlob(zeroed);
+    return zeroed;
+  }
+  for (const t of TEAMS) memory[t.id] = 0;
+  return withDefaults(memory);
 }

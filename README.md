@@ -40,11 +40,11 @@ The `/admin` page (commissioner-only) lets you set or adjust scores for each tea
 
 **For scores to persist across deploys and sync across devices:**
 
-1. In the Vercel dashboard, go to **Storage → Create → KV**
-2. Connect the store to your project — Vercel injects the env vars automatically
+1. In the Vercel dashboard, go to **Storage → Create → Blob**
+2. Connect the store to your project — Vercel injects `BLOB_READ_WRITE_TOKEN` automatically
 3. Redeploy
 
-Without KV, scores live in memory per serverless instance and reset on deploy. Fine for testing, not ideal for the party.
+Scores are stored as a single JSON document at `campdalto/scores.json` in the Blob store. Without the token, scores live in memory per serverless instance and reset on deploy. Fine for testing, not ideal for the party.
 
 ## Deploy to Vercel
 
@@ -60,7 +60,7 @@ npx vercel --prod
 Set environment variables in **Vercel → Project → Settings → Environment Variables**:
 - `SITE_PASSWORD` — what you text to guests
 - `ADMIN_PASSWORD` — your commissioner password  
-- (KV vars are injected automatically after connecting the store)
+- (`BLOB_READ_WRITE_TOKEN` is injected automatically after connecting the Blob store)
 
 ## Folder structure
 
@@ -81,7 +81,7 @@ components/
 lib/
   content.ts        ← ALL editable copy
   auth.ts           ← cookie / password logic
-  store.ts          ← KV or in-memory score storage
+  store.ts          ← Vercel Blob or in-memory score storage
 middleware.ts       ← enforces password gate on every route
 public/
   grain.svg         ← aged print texture overlay
