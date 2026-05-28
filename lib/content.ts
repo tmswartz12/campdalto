@@ -121,8 +121,8 @@ export const TEAMS: Team[] = [
   {
     id: "dice",
     name: "Snake Eyes",
-    color: "#8b1e3f",
-    ink: "#f4ead5",
+    color: "#d4a017",
+    ink: "#2a2a2a",
     emoji: "🎲",
     motto: "The King's roll. House never folds.",
     members: [
