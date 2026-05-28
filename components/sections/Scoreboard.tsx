@@ -50,7 +50,7 @@ export default function Scoreboard() {
       <div className="max-w-4xl mx-auto px-5 md:px-8">
         <div className="flex items-end justify-between gap-6 flex-wrap mb-12">
           <SectionHeader
-            eyebrow="06 — Live Scoreboard"
+            eyebrow="09 — Live Scoreboard"
             title="Updated in real time by the Commissioner."
             light
           />

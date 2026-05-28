@@ -11,7 +11,7 @@ export default function Schedule() {
     <section id="schedule" className="py-24 md:py-32 bg-ink text-bone">
       <div className="max-w-5xl mx-auto px-5 md:px-8">
         <SectionHeader
-          eyebrow="03 — The Schedule"
+          eyebrow="04 — The Schedule"
           title="The schedule is a suggestion. The pain is not."
           light
         />

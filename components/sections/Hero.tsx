@@ -91,7 +91,7 @@ export default function Hero() {
               <p className="text-bone/75 text-lg md:text-xl leading-snug">
                 Two days. Four tribes. One king. Zero mercy. A weekend in the woods
                 in honor of {EVENT_INFO.honoree} — cleats on, game faces up, dignity
-                left in the car.
+                left on the bus.
               </p>
             </motion.div>
 

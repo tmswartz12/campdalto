@@ -12,7 +12,7 @@ export default function HonoredGuest() {
     <section id="rob" className="py-24 md:py-32 bg-bone">
       <div className="max-w-6xl mx-auto px-5 md:px-8">
         <SectionHeader
-          eyebrow="07 — The Honored Guest"
+          eyebrow="01 — The Honored Guest"
           title={HONORED.title}
         />
 

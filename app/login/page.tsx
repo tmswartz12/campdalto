@@ -1,6 +1,7 @@
 "use client";
 import { useState, FormEvent, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import Image from "next/image";
 import { Lock } from "lucide-react";
 
 function LoginForm() {
@@ -61,14 +62,18 @@ function LoginForm() {
 
       <div className="w-full max-w-sm relative z-10">
         {/* Brand */}
-        <div className="flex items-center justify-center gap-2.5 mb-10">
-          <span className="w-2 h-2 rounded-full bg-clay" aria-hidden="true" />
-          <span className="font-display text-[15px] font-semibold tracking-tightest text-bone">
-            Camp Dalto
-          </span>
-          <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-bone/55">
-            / 2026
-          </span>
+        <div className="flex flex-col items-center mb-8">
+          <Image
+            src="/logo.png"
+            alt="Camp Dalto"
+            width={360}
+            height={360}
+            priority
+            className="w-[180px] sm:w-[200px] h-auto drop-shadow-[0_8px_32px_rgba(0,0,0,0.4)]"
+          />
+          <p className="mt-4 font-mono text-[10px] uppercase tracking-[0.22em] text-bone/55">
+            Camp Dalto · 2026
+          </p>
         </div>
 
         {/* Card */}
@@ -76,17 +81,17 @@ function LoginForm() {
           <div className="flex items-center gap-2.5 mb-5">
             <Lock size={14} className="text-clay" />
             <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted">
-              {isAdmin ? "Commissioner Access" : "Members Only"}
+              {isAdmin ? "Commissioner Access" : "Rob’s Inner Circle"}
             </span>
           </div>
 
           <h1 className="display text-3xl md:text-[34px] font-semibold tracking-editorial leading-tight">
-            {isAdmin ? "Sign in as Commissioner." : "You know the word."}
+            {isAdmin ? "Sign in, Commissioner." : "Speak the word. See the King."}
           </h1>
           <p className="mt-2 text-[14px] text-muted leading-relaxed">
             {isAdmin
-              ? "Score updates and team rosters live behind this gate."
-              : "Bachelor party members only. Don’t share the link."}
+              ? "Score updates and roster moves live behind this gate. Rulings are final, binding, and deeply biased."
+              : "Rob’s bachelor party only. Don’t share the link. Don’t text Miri. Don’t tag anyone in anything."}
           </p>
 
           <form onSubmit={handleSubmit} className="mt-6 space-y-3">

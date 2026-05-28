@@ -17,7 +17,7 @@ export default function Events() {
       <div className="max-w-7xl mx-auto px-5 md:px-8">
         <div className="flex items-end justify-between gap-6 mb-12 flex-wrap">
           <SectionHeader
-            eyebrow="04 — The Events"
+            eyebrow="05 — The Events"
             title="Thirteen events. One king crowned. Everybody else loses."
           />
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted pb-2">

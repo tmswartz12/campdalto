@@ -57,7 +57,7 @@ export default function PackingList() {
     <section id="packing" className="py-24 md:py-32 bg-bone border-t border-ink/8">
       <div className="max-w-5xl mx-auto px-5 md:px-8">
         <SectionHeader
-          eyebrow="08 — Packing List"
+          eyebrow="11 — Packing List"
           title="Forget your gear. Sit on the bench."
         />
 

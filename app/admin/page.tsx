@@ -5,7 +5,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { RefreshCw, Plus, Minus, RotateCcw, LogOut } from "lucide-react";
-import { TEAMS, SCORING, PHOTO_BONUS } from "@/lib/content";
+import { TEAMS, SCORING, SCORING_BONUSES } from "@/lib/content";
 import { useRouter } from "next/navigation";
 
 type Scores = Record<string, number>;
@@ -189,12 +189,15 @@ export default function AdminPage() {
                 <p className="text-[12px] text-muted mt-1 leading-snug">{tier.note}</p>
               </div>
             ))}
-            <div>
-              <p className="display text-base font-semibold text-ink mb-1">{PHOTO_BONUS.label}</p>
-              <p className="font-mono text-[12px] text-ink/70 tabular-nums">
-                +{PHOTO_BONUS.points} / item
-              </p>
-            </div>
+            {SCORING_BONUSES.map((b) => (
+              <div key={b.id}>
+                <p className="display text-base font-semibold text-ink mb-1">{b.label}</p>
+                <p className="font-mono text-[12px] text-ink/70 tabular-nums">
+                  +{b.points}
+                </p>
+                <p className="text-[12px] text-muted mt-1 leading-snug">{b.note}</p>
+              </div>
+            ))}
           </div>
         </div>
       </div>

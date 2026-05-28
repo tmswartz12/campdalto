@@ -1,16 +1,22 @@
 "use client";
 import { motion } from "framer-motion";
 import SectionHeader from "@/components/ui/SectionHeader";
-import { SCORING, PHOTO_BONUS, PLACE_LABELS } from "@/lib/content";
+import { SCORING, SCORING_BONUSES, PLACE_LABELS } from "@/lib/content";
 
 const PLACE_COLORS = ["#E0B23A", "#B8B5AD", "#D04E2A", "#6E6A62"];
+
+const BONUS_ACCENT: Record<string, { border: string; bg: string; dot: string }> = {
+  chug: { border: "border-clay/40", bg: "bg-clay/10", dot: "bg-clay" },
+  toast: { border: "border-forest/40", bg: "bg-forest/10", dot: "bg-forest" },
+  longrun: { border: "border-sun/40", bg: "bg-sun/10", dot: "bg-sun" },
+};
 
 export default function Scoring() {
   return (
     <section id="scoring" className="py-24 md:py-32 bg-paper border-y border-ink/8">
       <div className="max-w-5xl mx-auto px-5 md:px-8">
         <SectionHeader
-          eyebrow="05 — Scoring"
+          eyebrow="06 — Scoring"
           title="Points. Places. Pride."
         />
 
@@ -61,29 +67,37 @@ export default function Scoring() {
           ))}
         </div>
 
-        {/* Photo bonus — outside table, callout style */}
-        <motion.div
-          initial={{ opacity: 0, y: 8 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-40px" }}
-          transition={{ duration: 0.35, delay: 0.2 }}
-          className="mt-4 rounded-2xl border border-sun/40 bg-sun/10 px-5 md:px-7 py-5 flex items-center justify-between gap-4"
-        >
-          <div className="min-w-0">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-sun" />
-              <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink/70">
-                {PHOTO_BONUS.label}
-              </p>
-            </div>
-            <p className="text-[13px] md:text-[14px] text-ink/70 leading-relaxed">
-              {PHOTO_BONUS.note}
-            </p>
-          </div>
-          <span className="font-display text-3xl md:text-4xl font-semibold text-ink tabular-nums shrink-0">
-            +{PHOTO_BONUS.points}
-          </span>
-        </motion.div>
+        {/* Bonus rounds — outside the tiered table */}
+        <div className="mt-4 space-y-3">
+          {SCORING_BONUSES.map((b, i) => {
+            const accent = BONUS_ACCENT[b.id] ?? BONUS_ACCENT.longrun;
+            return (
+              <motion.div
+                key={b.id}
+                initial={{ opacity: 0, y: 8 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: "-40px" }}
+                transition={{ duration: 0.35, delay: 0.2 + i * 0.05 }}
+                className={`rounded-2xl border ${accent.border} ${accent.bg} px-5 md:px-7 py-5 flex items-center justify-between gap-4`}
+              >
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className={`w-1.5 h-1.5 rounded-full ${accent.dot}`} />
+                    <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-ink/70">
+                      {b.label}
+                    </p>
+                  </div>
+                  <p className="text-[13px] md:text-[14px] text-ink/70 leading-relaxed">
+                    {b.note}
+                  </p>
+                </div>
+                <span className="font-display text-3xl md:text-4xl font-semibold text-ink tabular-nums shrink-0">
+                  +{b.points}
+                </span>
+              </motion.div>
+            );
+          })}
+        </div>
 
         <p className="text-center font-mono text-[11px] uppercase tracking-[0.2em] text-muted mt-10">
           Commissioner&apos;s rulings are final, binding, deeply biased, and not subject to appeal.

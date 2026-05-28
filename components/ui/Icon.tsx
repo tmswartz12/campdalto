@@ -3,13 +3,13 @@
 import {
   Bus, Home, Flag, Flame, UtensilsCrossed, Anchor, Target, Spade,
   CircleDot, Crosshair, Sun, Bomb, Rocket, Footprints, Layers, Crown,
-  Camera, GlassWater, Volleyball, LucideProps,
+  Camera, GlassWater, Volleyball, Beer, Wine, LucideProps,
 } from "lucide-react";
 
 const MAP: Record<string, React.FC<LucideProps>> = {
   Bus, Home, Flag, Flame, UtensilsCrossed, Anchor, Target, Spade,
   CircleDot, Crosshair, Sun, Bomb, Rocket, Footprints, Layers, Crown,
-  Camera, GlassWater, Volleyball,
+  Camera, GlassWater, Volleyball, Beer, Wine,
 };
 
 interface Props extends LucideProps {

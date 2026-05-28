@@ -34,17 +34,21 @@ export const NAV_LINKS = [
 export const MISSION = {
   body: [
     "Welcome to Camp Dalto — two days of grass stains, blown hammies, and the worst hangover of your adult life. All sanctioned. All for one man.",
-    "Forty degenerates. Four tribes. One weekend of Olympic-grade competition where every game scores, every point matters, and the bragging rights survive the wedding, the kids, and the inevitable divorce of whoever loses dodgeball.",
-    "You will be drafted. You will compete. You will, at some point, carry the King on your shoulders. Bring cleats. Bring gloves. Leave your dignity in the car — there's no room for it at camp.",
+    "Thirty degenerates. Four tribes. One weekend of Olympic-grade competition where every game scores, every point matters, and the bragging rights survive the wedding, the kids, and the inevitable divorce of whoever loses dodgeball.",
+    "You will be drafted. You will compete. You will drink with your off hand. Bring cleats. Bring gloves. Leave your dignity on the bus — there's no room for it at camp.",
   ],
 };
 
 // Camp Laws — non-negotiable, enforced by the Commissioner.
 export const RULES: string[] = [
   "Cheers before every toast. Forget once, you drink it standing on a chair.",
-  "When the King is summoned, you carry the King. On your shoulders. Squat form not graded.",
+  "Left hand only. Caught drinking with the right, drink again — standing.",
+  "Summoned to a chug-off, you chug. No timeouts. No subs. No mercy.",
+  "Every cig lit gets smoked. Down to the filter. No half-measures.",
+  "The Base Relay is mandatory. No appeals, no doctor's notes, no exceptions.",
+  "If Rob FaceTimes Miri, the whole camp drinks. Twice if it's after midnight.",
+  "Bring up wedding planning, you owe the table a shot.",
   "The Commissioner is always right. Especially when he is clearly wrong.",
-  "Skipping the Base Relay is grounds for forfeit. No appeals, no doctor's notes.",
   "What happens at Camp Dalto stays at Camp Dalto. There is no group chat.",
   "Have fun. Failure to enjoy yourself is grounds for ejection.",
 ];
@@ -136,15 +140,17 @@ export const ITINERARY: Day[] = [
     label: "Saturday",
     subtitle: "Bachelor Olympics Day",
     events: [
+      { time: "6:30 AM", title: "The Long Run", desc: "Optional in name only. Whoever logs the longest miles earns their tribe +10. Pace honor system, distance not.", icon: "Footprints" },
       { time: "8:00 AM", title: "Breakfast + Uno Tournament", desc: "A peaceful breakfast and a vicious game of Uno. No friendship survives a +4.", icon: "UtensilsCrossed" },
       { time: "9:30 AM", title: "Tug of War", desc: "Four teams. One rope. Cleats highly encouraged.", icon: "Anchor" },
-      { time: "10:30 AM", title: "Skills Block", desc: "Free throws. Football throw. Base relay. Show out or sit out.", icon: "Target" },
+      { time: "10:30 AM", title: "Skills Block + Beer Mile", desc: "Free throws. Football throw. Base relay. Then four laps, four beers, full Major points on the line.", icon: "Target" },
       { time: "12:30 PM", title: "Lunch + Chess & Cards", desc: "Refuel. Then out-think them at the board. Out-bluff them at the table.", icon: "Spade" },
       { time: "2:00 PM", title: "Wiffle Ball Tournament", desc: "Backyard legends are born here. Bat flips mandatory.", icon: "CircleDot" },
       { time: "3:45 PM", title: "Cornhole + Pickleball", desc: "Cornhole into pickleball. The two most dangerous sports in America.", icon: "Crosshair" },
       { time: "5:15 PM", title: "Free Time", desc: "Lake. Hammock. Emergency strategy session. Ice bath if you're smart.", icon: "Sun" },
       { time: "6:00 PM", title: "Dinner", desc: "The calm before the dodgeball storm.", icon: "UtensilsCrossed" },
       { time: "7:00 PM", title: "Dodgeball — The Grand Finale", desc: "Biggest point swing of the weekend. No headshots. No witnesses. No prisoners.", icon: "Bomb" },
+      { time: "8:45 PM", title: "The Final Toast", desc: "Each tribe nominates one orator. Commissioner ranks. Best toast banks +50 for the tribe. Tears acceptable. Cue cards are not.", icon: "Wine" },
       { time: "9:15 PM", title: "Closing Ceremony at the Fire Pit", desc: "Champions crowned. Grievances aired. Medals handed out around the fire.", icon: "Flame" },
     ],
   },
@@ -176,6 +182,7 @@ export const EVENTS: CampEvent[] = [
   { name: "Tug of War", icon: "Anchor", tier: "Major", format: "Single-elim bracket. Cleats highly encouraged." },
   { name: "Wiffle Ball", icon: "CircleDot", tier: "Major", format: "Round robin to final. Bat flips mandatory." },
   { name: "Dodgeball", icon: "Bomb", tier: "Major", format: "The Grand Finale. No headshots. No witnesses." },
+  { name: "Beer Mile", icon: "Beer", tier: "Major", format: "Skills Block, Saturday morning. Four laps, four beers. One champion per tribe." },
   { name: "Free Throws", icon: "Target", tier: "Minor", format: "Best of 10 per player. Form not graded." },
   { name: "Football Throw", icon: "Rocket", tier: "Minor", format: "Longest accurate spiral. Wobblers don't count." },
   { name: "Base Relay", icon: "Footprints", tier: "Minor", format: "Sprint the bases. Skipping is grounds for forfeit." },
@@ -184,7 +191,8 @@ export const EVENTS: CampEvent[] = [
   { name: "Uno", icon: "Layers", tier: "Side", format: "Stacking is legal. Friendships are not." },
   { name: "Chess", icon: "Crown", tier: "Side", format: "Speed chess, 5-minute clock. Talking allowed." },
   { name: "Cards", icon: "Spade", tier: "Side", format: "Dealer's choice. Money on the line." },
-  { name: "Photo Scavenger Hunt", icon: "Camera", tier: "Bonus", format: "All weekend. +10 per item, no cap. Get weirder." },
+  { name: "The Long Run", icon: "Footprints", tier: "Bonus", format: "Saturday 6:30 AM. Longest distance earns their tribe +10. One per camper." },
+  { name: "The Final Toast", icon: "Wine", tier: "Bonus", format: "Saturday 8:45 PM. One toaster per tribe. Commissioner ranks. Best toast banks +50." },
 ];
 
 // ---------------------------------------------------------------------------
@@ -198,18 +206,111 @@ export interface ScoreTier {
 }
 
 export const SCORING: ScoreTier[] = [
-  { id: "major", label: "Major Events", points: [100, 70, 40, 20], note: "Flip Cup · Tug of War · Wiffle Ball · Dodgeball" },
+  { id: "major", label: "Major Events", points: [100, 70, 40, 20], note: "Flip Cup · Tug of War · Wiffle Ball · Dodgeball · Beer Mile" },
   { id: "minor", label: "Minor Events", points: [60, 40, 25, 15], note: "Free Throws · Football · Relay · Cornhole · Pickleball" },
   { id: "side", label: "Side Games", points: [30, 20, 10, 5], note: "Uno · Chess · Cards" },
 ];
 
-export const PHOTO_BONUS = {
-  label: "Photo Bonus",
+export const PLACE_LABELS = ["1st", "2nd", "3rd", "4th"];
+
+// Bonus rounds — flat point awards outside the tiered table.
+export interface ScoreBonus {
+  id: string;
+  label: string;
+  points: number;
+  note: string;
+}
+
+export const SCORING_BONUSES: ScoreBonus[] = [
+  {
+    id: "chug",
+    label: "Chug-Off",
+    points: 10,
+    note: "After every event. Winning team picks the chuggers. Loser wears The Wig.",
+  },
+  {
+    id: "toast",
+    label: "The Final Toast",
+    points: 50,
+    note: "Saturday night. One toaster per tribe. Commissioner ranks. Best toast wins.",
+  },
+  {
+    id: "longrun",
+    label: "Long Run",
+    points: 10,
+    note: "Saturday 6:30 AM. Longest distance logged earns their tribe the bonus.",
+  },
+];
+
+// ---------------------------------------------------------------------------
+// THE CHUG-OFF — between-event bonus round
+// ---------------------------------------------------------------------------
+export const CHUG_OFF = {
   points: 10,
-  note: "+10 per item, no cap, get weirder. Commissioner has final say on what counts.",
+  blurb:
+    "After every event, the winning team picks one chugger from each tribe. Four men. Four beers. Ten points on the table. The loser dons the wig until the next chug-off — and prays it comes quickly.",
+  rules: [
+    "After every event, the winning team nominates one chugger from each of the four tribes.",
+    "If you've chugged, you can't chug again. Save your best arms for last.",
+    "Slowest chugger wears The Wig until the next chug-off. No swapping. No cropping.",
+    "Winning tribe banks +10. Losing tribe banks a portrait with the wig on.",
+  ],
 };
 
-export const PLACE_LABELS = ["1st", "2nd", "3rd", "4th"];
+// ---------------------------------------------------------------------------
+// THE BEER MILE — Saturday's Skills Block centerpiece
+// ---------------------------------------------------------------------------
+export const BEER_MILE = {
+  points: 100,
+  when: "Saturday · Skills Block",
+  blurb:
+    "Four laps. Four beers. One champion per tribe. A full Major event — Flip Cup, Tug of War, Wiffle Ball, Dodgeball… and this. Place first and bank 100. Place last and answer for it at the fire pit.",
+  rules: [
+    "Each tribe picks one runner. Pick wrong and the wig becomes the least of your problems.",
+    "Four 400m laps. Crack and finish a full beer before each. Cans only, no cheating cups.",
+    "Vomit before the line, run a penalty lap. Vomit after, you're a legend either way.",
+    "Scored as a Major: 100 / 70 / 40 / 20. Place matters. Pride more so.",
+  ],
+};
+
+// Saturday-morning long-run bonus — individual effort, team scoring.
+export const LONG_RUN_BONUS = {
+  label: "Long Run Bonus",
+  points: 10,
+  note: "Saturday 6:30 AM. Longest run logged earns their tribe +10. Strava receipts mandatory.",
+};
+
+// Saturday-night closing toast — team-nominated orator, Commissioner judges.
+export const CLOSING_TOAST = {
+  label: "The Final Toast",
+  points: 50,
+  note: "Each tribe nominates one toaster Saturday night. Commissioner ranks. Best toast banks +50. No cue cards.",
+};
+
+// ---------------------------------------------------------------------------
+// THE CAMP — Camp Lenox, est. 1918
+// ---------------------------------------------------------------------------
+export const CAMP = {
+  name: "Camp Lenox",
+  established: 1918,
+  tagline: "The Traditional Sports Camp for Boys and Girls",
+  location: "Lenox, MA · The Berkshires",
+  mapSrc: "/photos/map.jpg",
+  mapAlt: "Camp Lenox grounds map — Shaw Pond, courts, fields, cabins.",
+  blurb:
+    "Camp Lenox — established 1918, a premier Berkshires sleepaway for kids 7 to 16, blending serious sports programming with the traditional summer camp experience. For one weekend in May we borrow the bunks, the dining hall, the courts, the fields, the pond, and every blade of grass — and ruin it slightly. Memorize the map before Saturday or wander into the wrong cabin at 2 AM.",
+  // Map of events → likely venues. Loose — Commissioner reserves the right to relocate any battle.
+  battlegrounds: [
+    { spot: "Shaw Pond", use: "Polar plunge. Recovery hangs. Where the dignity goes to die." },
+    { spot: "Court Kaminer", use: "Free throws. Air-balls broadcast camp-wide." },
+    { spot: "Old Pitch", use: "Football throw. Wobble = forfeit." },
+    { spot: "Geezer Field", use: "Wiffle ball. Bat flips encouraged, mandatory in finals." },
+    { spot: "Senior Court", use: "Beer Mile loop. Tug of War. Tribal screaming." },
+    { spot: "Dining Hall", use: "Flip Cup. Breakfast. Two of the three are sacred." },
+    { spot: "Hike to the Falls", use: "Saturday Long Run terminus. Strava receipts settle ties." },
+    { spot: "Lakeside Fire Pit", use: "Opening + closing ceremonies. The Final Toast. All medals issued here." },
+  ],
+};
 
 // ---------------------------------------------------------------------------
 // THE HONORED GUEST

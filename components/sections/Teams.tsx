@@ -9,7 +9,7 @@ export default function Teams() {
       <div className="max-w-7xl mx-auto px-5 md:px-8">
         <div className="flex items-end justify-between gap-6 mb-12 md:mb-16 flex-wrap">
           <SectionHeader
-            eyebrow="02 — The Tribes"
+            eyebrow="03 — The Tribes"
             title="Four teams. One champion."
           />
           <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted pb-2">
