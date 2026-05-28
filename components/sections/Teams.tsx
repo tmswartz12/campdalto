@@ -5,71 +5,85 @@ import { TEAMS } from "@/lib/content";
 
 export default function Teams() {
   return (
-    <section
-      id="teams"
-      className="py-20 md:py-28"
-      style={{ background: "linear-gradient(180deg, #f4ead5 0%, #e8dfc8 100%)" }}
-    >
-      <div className="max-w-6xl mx-auto px-5 md:px-8">
-        <SectionHeader title="Meet the Tribes" subtitle="Four teams. One champion." pennants />
+    <section id="teams" className="py-24 md:py-32 bg-paper border-y border-ink/8">
+      <div className="max-w-7xl mx-auto px-5 md:px-8">
+        <div className="flex items-end justify-between gap-6 mb-12 md:mb-16 flex-wrap">
+          <SectionHeader
+            eyebrow="02 — The Tribes"
+            title="Four teams. One champion."
+          />
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted pb-2">
+            Drafted live · Friday 5:30 PM
+          </p>
+        </div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6 mt-4">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-5">
           {TEAMS.map((team, i) => (
-            <motion.div
+            <motion.article
               key={team.id}
-              initial={{ opacity: 0, y: 28 }}
+              initial={{ opacity: 0, y: 18 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.45, ease: "easeOut", delay: i * 0.08 }}
-              whileHover={{ y: -6, boxShadow: "0 20px 40px rgba(0,0,0,0.18)" }}
-              className="rounded-sm overflow-hidden shadow-badge"
-              style={{
-                transform: i % 2 === 0 ? "rotate(0.5deg)" : "rotate(-0.5deg)",
-              }}
+              viewport={{ once: true, margin: "-60px" }}
+              transition={{ duration: 0.45, delay: i * 0.06 }}
+              className="group relative bg-bone rounded-2xl border border-ink/8 overflow-hidden hover:shadow-lift hover:-translate-y-0.5 transition-all duration-300"
             >
-              {/* Color band (pennant-style) */}
+              {/* Color rail */}
               <div
-                className="relative h-28 flex items-center justify-center flex-col gap-1"
+                className="h-1.5 w-full"
                 style={{ background: team.color }}
-              >
-                {/* Pennant shape cut at the bottom */}
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: `linear-gradient(160deg, ${team.color}dd, ${team.color})`,
-                    clipPath: "polygon(0 0, 100% 0, 100% 75%, 50% 100%, 0 75%)",
-                  }}
-                  aria-hidden="true"
-                />
-                <span className="relative text-4xl z-10" role="img" aria-label={team.name}>
-                  {team.emoji}
-                </span>
-                <h3
-                  className="relative z-10 font-display text-base tracking-widest uppercase text-center px-2 leading-tight"
-                  style={{ color: team.ink }}
-                >
+                aria-hidden="true"
+              />
+
+              <div className="p-6">
+                {/* Header row */}
+                <div className="flex items-start justify-between mb-6">
+                  <span
+                    className="font-mono text-[11px] uppercase tracking-[0.2em]"
+                    style={{ color: team.color }}
+                  >
+                    Team 0{i + 1}
+                  </span>
+                  <span
+                    className="text-2xl leading-none opacity-70 group-hover:opacity-100 transition-opacity"
+                    role="img"
+                    aria-label={team.name}
+                  >
+                    {team.emoji}
+                  </span>
+                </div>
+
+                {/* Name */}
+                <h3 className="display text-2xl md:text-[26px] font-semibold text-ink leading-[1.05] tracking-editorial">
                   {team.name}
                 </h3>
-              </div>
 
-              {/* Card body */}
-              <div className="bg-cream p-5 canvas-border">
-                <p className="font-marker text-burnt text-sm italic text-center mb-4">
+                {/* Motto */}
+                <p className="mt-2 text-sm text-muted italic font-display">
                   &ldquo;{team.motto}&rdquo;
                 </p>
-                <ul className="space-y-1">
+
+                {/* Divider */}
+                <div className="my-5 h-px bg-ink/8" />
+
+                {/* Roster */}
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted mb-3">
+                  Roster
+                </p>
+                <ul className="space-y-1.5">
                   {team.members.map((m, j) => (
                     <li
                       key={j}
-                      className="font-body text-sm text-charcoal/75 flex items-center gap-2"
+                      className="flex items-center gap-2.5 text-[14px] text-ink/80"
                     >
-                      <span className="w-1.5 h-1.5 rounded-full bg-burnt/60 shrink-0" />
-                      {m}
+                      <span className="font-mono text-[10px] text-muted tabular-nums w-4">
+                        {String(j + 1).padStart(2, "0")}
+                      </span>
+                      <span>{m}</span>
                     </li>
                   ))}
                 </ul>
               </div>
-            </motion.div>
+            </motion.article>
           ))}
         </div>
       </div>

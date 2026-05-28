@@ -1,22 +1,36 @@
 import type { Metadata } from "next";
-import { Rye, Lora, Caveat } from "next/font/google";
+import { Inter, Fraunces, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 
-const display = Rye({ subsets: ["latin"], weight: "400", variable: "--font-display" });
-const body = Lora({ subsets: ["latin"], weight: ["400", "500", "700"], variable: "--font-body" });
-const marker = Caveat({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-marker" });
+const body = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-body",
+});
+
+const display = Fraunces({
+  subsets: ["latin"],
+  weight: ["400", "600", "700", "900"],
+  style: ["normal", "italic"],
+  variable: "--font-display",
+});
+
+const mono = JetBrains_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500"],
+  variable: "--font-mono",
+});
 
 export const metadata: Metadata = {
   title: "Camp Dalto — Bachelor Olympics 2026",
-  description: "A weekend of glory, grass stains, and questionable athletic decisions.",
-  // Prevent search engines from indexing the party site.
+  description: "Two days. Four tribes. One king. Zero mercy.",
   robots: "noindex, nofollow",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${display.variable} ${body.variable} ${marker.variable}`}>
-      <body className="grain">{children}</body>
+    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
+      <body>{children}</body>
     </html>
   );
 }

@@ -1,123 +1,154 @@
 "use client";
 import { motion } from "framer-motion";
-import { ChevronDown } from "lucide-react";
-import PennantRow from "@/components/ui/PennantRow";
-import { EVENT_INFO } from "@/lib/content";
+import Image from "next/image";
+import { ArrowDown, ArrowUpRight } from "lucide-react";
+import { EVENT_INFO, TEAMS } from "@/lib/content";
 
 export default function Hero() {
   return (
     <section
       id="top"
-      className="relative min-h-screen flex flex-col items-center justify-center text-center overflow-hidden"
-      style={{
-        background:
-          "linear-gradient(180deg, #1a2f19 0%, #2d4a2b 50%, #1e3a5f 100%)",
-      }}
+      className="relative min-h-screen flex flex-col bg-forest text-bone overflow-hidden"
     >
-      {/* Deep forest texture */}
+      {/* Topographic line texture — calm, modern, outdoors-y without being twee. */}
+      <svg
+        className="absolute inset-0 w-full h-full opacity-[0.13]"
+        aria-hidden="true"
+        preserveAspectRatio="xMidYMid slice"
+        viewBox="0 0 1200 800"
+      >
+        <defs>
+          <pattern id="topo" x="0" y="0" width="1200" height="800" patternUnits="userSpaceOnUse">
+            {Array.from({ length: 14 }).map((_, i) => (
+              <path
+                key={i}
+                d={`M -50 ${80 + i * 55} Q 300 ${40 + i * 55}, 600 ${100 + i * 55} T 1250 ${70 + i * 55}`}
+                fill="none"
+                stroke="#F4F1EA"
+                strokeWidth="1"
+              />
+            ))}
+          </pattern>
+        </defs>
+        <rect width="1200" height="800" fill="url(#topo)" />
+      </svg>
+
+      {/* Soft vignette */}
       <div
-        className="absolute inset-0 opacity-20"
+        className="absolute inset-0 pointer-events-none"
         style={{
-          backgroundImage:
-            "url('https://images.unsplash.com/photo-1448375240586-882707db888b?w=1600&q=80')",
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          mixBlendMode: "multiply",
+          background:
+            "radial-gradient(60% 50% at 50% 60%, rgba(0,0,0,0) 0%, rgba(0,0,0,0.35) 100%)",
         }}
         aria-hidden="true"
       />
-      <div className="absolute inset-0 bg-forest/50" aria-hidden="true" />
 
-      {/* Pennant string along the very top */}
-      <div className="absolute top-20 inset-x-0 flex justify-center">
-        <PennantRow count={13} className="max-w-2xl px-4" />
-      </div>
-
-      {/* Main wordmark */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.9, ease: "easeOut" }}
-        className="relative z-10 px-4"
-      >
-        {/* Carved wooden sign */}
-        <div
-          className="inline-block px-8 py-6 md:px-16 md:py-10 wood-grain"
-          style={{
-            background: "linear-gradient(160deg, #5a3d24 0%, #3b2518 60%, #2b1a10 100%)",
-            boxShadow:
-              "inset 0 2px 8px rgba(255,255,255,0.14), inset 0 -14px 24px rgba(0,0,0,0.55), 0 18px 40px rgba(0,0,0,0.45)",
-            borderRadius: "3px",
-            transform: "rotate(-0.5deg)",
-          }}
-        >
-          {/* Camp label */}
-          <p className="font-marker text-mustard text-xl md:text-2xl tracking-[0.25em] uppercase mb-1 opacity-85">
-            Welcome to
-          </p>
-
-          {/* Big wordmark */}
-          <h1
-            className="font-display text-cream text-6xl sm:text-7xl md:text-9xl tracking-widest uppercase leading-none"
-            style={{ textShadow: "0 4px 16px rgba(0,0,0,0.7), 0 0 40px rgba(212,160,23,0.15)" }}
-          >
-            Camp<br className="hidden sm:block" />{" "}
-            <span className="text-mustard drop-shadow-lg">Dalto</span>
-          </h1>
-
-          <div className="mt-3 h-1 w-3/4 mx-auto rounded-full bg-mustard/40" />
-
-          <p className="font-body text-cream/80 text-base md:text-lg mt-4 tracking-wider">
-            {EVENT_INFO.tagline}
-          </p>
+      <div className="relative z-10 flex-1 flex flex-col">
+        {/* Top metadata bar */}
+        <div className="pt-24 md:pt-28 px-5 md:px-8 max-w-7xl mx-auto w-full">
+          <div className="flex items-center justify-between font-mono text-[11px] uppercase tracking-[0.2em] text-bone/55">
+            <span>N 41.7° / W 74.2°</span>
+            <span className="hidden sm:inline">{EVENT_INFO.shortDates}</span>
+            <span>Vol. {EVENT_INFO.year - 2025} · Edition 01</span>
+          </div>
+          <div className="mt-3 h-px bg-bone/15" />
         </div>
 
-        {/* Date badge */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.4, duration: 0.5 }}
-          className="mt-6 inline-flex items-center gap-3 bg-burnt/90 text-cream px-5 py-2 rounded-full font-marker text-lg tracking-wide shadow-lg"
-        >
-          <span>📅</span>
-          <span>{EVENT_INFO.dates}</span>
-        </motion.div>
+        {/* Wordmark */}
+        <div className="flex-1 flex items-center px-5 md:px-8">
+          <div className="max-w-7xl mx-auto w-full">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.94 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.7, ease: [0.22, 0.61, 0.36, 1] }}
+              className="mb-6 md:mb-8"
+            >
+              <Image
+                src="/logo.png"
+                alt="Camp Dalto"
+                width={520}
+                height={520}
+                priority
+                className="w-[220px] sm:w-[300px] md:w-[400px] lg:w-[500px] h-auto -ml-2 md:-ml-3 drop-shadow-[0_8px_40px_rgba(0,0,0,0.45)]"
+              />
+            </motion.div>
 
-        {/* Sub-headline */}
-        <motion.p
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6, duration: 0.6 }}
-          className="mt-4 font-body text-cream/65 text-sm md:text-base max-w-md mx-auto"
-        >
-          A surprise for a king. Don&apos;t ruin it.
-        </motion.p>
+            <motion.p
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2, duration: 0.5 }}
+              className="font-mono text-[11px] uppercase tracking-[0.24em] text-clay mb-4"
+            >
+              The Bachelor Olympics · Vol. 01
+            </motion.p>
 
-        {/* CTA */}
-        <motion.a
-          href="#mission"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.85, duration: 0.5 }}
-          className="mt-8 inline-flex items-center gap-2 border-2 border-cream/60 text-cream font-body font-medium uppercase tracking-widest text-sm px-7 py-3 rounded hover:bg-cream hover:text-forest transition-all duration-200 hover:border-cream"
-        >
-          View the Itinerary <ChevronDown size={16} />
-        </motion.a>
-      </motion.div>
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+              className="mt-8 max-w-xl"
+            >
+              <p className="text-bone/75 text-lg md:text-xl leading-snug">
+                Two days. Four tribes. One king. Zero mercy. A weekend in the woods
+                in honor of {EVENT_INFO.honoree} — cleats on, game faces up, dignity
+                left in the car.
+              </p>
+            </motion.div>
 
-      {/* Scroll indicator */}
-      <motion.div
-        animate={{ y: [0, 8, 0] }}
-        transition={{ repeat: Infinity, duration: 1.6 }}
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 text-cream/40"
-        aria-hidden="true"
-      >
-        <ChevronDown size={24} />
-      </motion.div>
+            {/* CTAs */}
+            <motion.div
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.45, duration: 0.5 }}
+              className="mt-10 flex flex-wrap items-center gap-3"
+            >
+              <a
+                href="#schedule"
+                className="group inline-flex items-center gap-2 bg-bone text-ink font-body text-sm font-semibold px-5 py-3 rounded-full hover:bg-clay hover:text-bone transition-colors"
+              >
+                View the itinerary
+                <ArrowDown
+                  size={16}
+                  className="transition-transform group-hover:translate-y-0.5"
+                />
+              </a>
+              <a
+                href="#scoreboard"
+                className="group inline-flex items-center gap-2 border border-bone/30 text-bone font-body text-sm font-medium px-5 py-3 rounded-full hover:border-bone/70 transition-colors"
+              >
+                Live scoreboard
+                <ArrowUpRight
+                  size={16}
+                  className="transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5"
+                />
+              </a>
+            </motion.div>
+          </div>
+        </div>
 
-      {/* Bottom pennant string */}
-      <div className="absolute bottom-0 inset-x-0 flex justify-center">
-        <PennantRow count={15} className="max-w-3xl" />
+        {/* Bottom rail — four team swatches as quiet brand color */}
+        <div className="px-5 md:px-8 pb-10 max-w-7xl mx-auto w-full">
+          <div className="h-px bg-bone/15 mb-5" />
+          <div className="flex items-center justify-between gap-6">
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-bone/55">
+              {EVENT_INFO.dates}
+            </p>
+            <div className="flex items-center gap-3">
+              {TEAMS.map((t, i) => (
+                <div key={t.id} className="flex items-center gap-2">
+                  <span
+                    className="w-2.5 h-2.5 rounded-full"
+                    style={{ background: t.color }}
+                    aria-hidden="true"
+                  />
+                  <span className="hidden md:inline font-mono text-[10px] uppercase tracking-[0.18em] text-bone/55">
+                    0{i + 1}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     </section>
   );

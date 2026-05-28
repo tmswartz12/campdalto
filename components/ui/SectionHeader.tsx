@@ -1,45 +1,52 @@
 "use client";
 import { motion } from "framer-motion";
-import PennantRow from "./PennantRow";
 
 interface Props {
   title: string;
   subtitle?: string;
+  eyebrow?: string;
+  light?: boolean;
+  align?: "left" | "center";
+  /** Kept for API compat; ignored in the new design. */
   pennants?: boolean;
-  light?: boolean; // white text (for dark backgrounds)
 }
 
-export default function SectionHeader({ title, subtitle, pennants = false, light = false }: Props) {
+export default function SectionHeader({
+  title,
+  subtitle,
+  eyebrow,
+  light = false,
+  align = "left",
+}: Props) {
+  const alignCls = align === "center" ? "text-center mx-auto" : "text-left";
+  const inkCls = light ? "text-bone" : "text-ink";
+  const mutedCls = light ? "text-bone/55" : "text-muted";
+
   return (
     <motion.div
-      initial={{ opacity: 0, y: 28 }}
+      initial={{ opacity: 0, y: 16 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true }}
-      transition={{ duration: 0.55, ease: "easeOut" }}
-      className="text-center mb-10 md:mb-14"
+      viewport={{ once: true, margin: "-80px" }}
+      transition={{ duration: 0.5, ease: [0.22, 0.61, 0.36, 1] }}
+      className={`max-w-2xl mb-10 md:mb-14 ${alignCls}`}
     >
-      {pennants && (
-        <div className="flex justify-center mb-3">
-          <PennantRow count={9} className="max-w-xs" />
-        </div>
+      {(eyebrow || subtitle) && (
+        <p
+          className={`font-mono text-[11px] uppercase tracking-[0.2em] mb-4 ${mutedCls}`}
+        >
+          {eyebrow ?? subtitle}
+        </p>
       )}
       <h2
-        className={`font-display text-4xl md:text-5xl lg:text-6xl tracking-wide uppercase leading-tight ${
-          light ? "text-cream" : "text-forest"
-        }`}
-        style={{ textShadow: light ? "0 2px 12px rgba(0,0,0,0.5)" : "none" }}
+        className={`display text-[34px] md:text-[44px] lg:text-[52px] leading-[1.02] font-semibold ${inkCls}`}
       >
         {title}
       </h2>
-      {subtitle && (
-        <p className={`font-marker text-lg md:text-xl mt-2 ${light ? "text-cream/70" : "text-charcoal/60"}`}>
+      {eyebrow && subtitle && (
+        <p className={`mt-4 text-base md:text-lg leading-relaxed ${mutedCls}`}>
           {subtitle}
         </p>
       )}
-      <div
-        className="mx-auto mt-4 h-1 w-24 rounded-full"
-        style={{ background: light ? "#f4ead5" : "#c8553d" }}
-      />
     </motion.div>
   );
 }

@@ -5,31 +5,40 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        forest: "#2d4a2b",
-        cream: "#f4ead5",
-        burnt: "#c8553d",
-        navy: "#1e3a5f",
-        mustard: "#d4a017",
-        charcoal: "#2a2a2a",
+        // Surfaces
+        bone: "#F4F1EA",
+        paper: "#FAF8F3",
+        ink: "#0F0F0E",
+        muted: "#6E6A62",
+
+        // Brand
+        forest: "#1B2A1A",
+        moss: "#3F5A38",
+        clay: "#D04E2A",
+        sun: "#E0B23A",
+        slate: "#1B2533",
       },
       fontFamily: {
         display: ["var(--font-display)", "Georgia", "serif"],
-        body: ["var(--font-body)", "Georgia", "serif"],
-        marker: ["var(--font-marker)", "cursive"],
+        body: ["var(--font-body)", "system-ui", "sans-serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
+      },
+      letterSpacing: {
+        tightest: "-0.04em",
+        editorial: "-0.025em",
       },
       boxShadow: {
-        // inset highlight + deep shadow = carved wooden sign
-        sign: "inset 0 2px 6px rgba(255,255,255,0.18), inset 0 -10px 18px rgba(0,0,0,0.45), 0 14px 28px rgba(0,0,0,0.35)",
-        badge: "0 8px 0 rgba(0,0,0,0.18), 0 14px 24px rgba(0,0,0,0.22)",
+        card: "0 1px 0 rgba(15,15,14,0.04), 0 6px 24px -12px rgba(15,15,14,0.12)",
+        lift: "0 1px 0 rgba(15,15,14,0.06), 0 24px 48px -24px rgba(15,15,14,0.22)",
       },
       keyframes: {
-        flicker: {
+        pulseSoft: {
           "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0.45" },
+          "50%": { opacity: "0.55" },
         },
       },
       animation: {
-        flicker: "flicker 1.4s ease-in-out infinite",
+        pulseSoft: "pulseSoft 2.2s ease-in-out infinite",
       },
     },
   },

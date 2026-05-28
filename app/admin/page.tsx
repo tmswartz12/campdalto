@@ -12,8 +12,8 @@ type Scores = Record<string, number>;
 
 export default function AdminPage() {
   const router = useRouter();
-  const [scores, setScores] = useState<Scores>(
-    () => Object.fromEntries(TEAMS.map((t) => [t.id, 0]))
+  const [scores, setScores] = useState<Scores>(() =>
+    Object.fromEntries(TEAMS.map((t) => [t.id, 0]))
   );
   const [loading, setLoading] = useState(false);
   const [msg, setMsg] = useState("");
@@ -28,7 +28,9 @@ export default function AdminPage() {
     if (res.ok) setScores(await res.json());
   }, []);
 
-  useEffect(() => { fetchScores(); }, [fetchScores]);
+  useEffect(() => {
+    fetchScores();
+  }, [fetchScores]);
 
   async function patch(body: object) {
     setLoading(true);
@@ -40,7 +42,7 @@ export default function AdminPage() {
       });
       if (res.ok) {
         setScores(await res.json());
-        flash("✓ Saved");
+        flash("Saved");
       } else {
         flash("Error — check the console.");
       }
@@ -58,23 +60,25 @@ export default function AdminPage() {
   const quickDeltas = [5, 10, 15, 20, 25, 30, 40, 60, 70, 100];
 
   return (
-    <main
-      className="min-h-screen p-6 md:p-10"
-      style={{ background: "linear-gradient(180deg, #1a1a1a 0%, #2a2a2a 100%)" }}
-    >
-      <div className="max-w-4xl mx-auto">
+    <main className="min-h-screen bg-bone text-ink p-5 md:p-10">
+      <div className="max-w-5xl mx-auto">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <header className="flex items-start justify-between gap-6 flex-wrap mb-10 pb-6 border-b border-ink/8">
           <div>
-            <h1 className="font-display text-mustard text-3xl md:text-4xl uppercase tracking-widest">
+            <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-clay mb-2">
               Commissioner Panel
+            </p>
+            <h1 className="display text-3xl md:text-4xl font-semibold text-ink tracking-editorial">
+              Scoreboard control
             </h1>
-            <p className="font-marker text-cream/40 text-sm mt-1">Camp Dalto Scoreboard Control</p>
+            <p className="mt-2 text-sm text-muted">
+              Changes propagate to the live board within 15 seconds.
+            </p>
           </div>
-          <div className="flex gap-3">
+          <div className="flex gap-2">
             <button
               onClick={fetchScores}
-              className="flex items-center gap-1.5 text-cream/50 hover:text-cream text-xs font-body uppercase tracking-wide transition-colors border border-cream/10 px-3 py-2 rounded"
+              className="flex items-center gap-1.5 text-ink/70 hover:text-ink text-[12px] font-body font-medium transition-colors border border-ink/15 hover:border-ink/40 px-3 py-2 rounded-lg"
             >
               <RefreshCw size={13} /> Refresh
             </button>
@@ -84,111 +88,112 @@ export default function AdminPage() {
                   patch({ reset: true });
                 }
               }}
-              className="flex items-center gap-1.5 text-burnt hover:text-red-400 text-xs font-body uppercase tracking-wide transition-colors border border-burnt/30 px-3 py-2 rounded"
+              className="flex items-center gap-1.5 text-clay hover:text-clay/80 text-[12px] font-body font-medium transition-colors border border-clay/40 hover:border-clay px-3 py-2 rounded-lg"
             >
-              <RotateCcw size={13} /> Reset All
+              <RotateCcw size={13} /> Reset all
             </button>
             <button
               onClick={logout}
-              className="flex items-center gap-1.5 text-cream/40 hover:text-cream text-xs font-body uppercase tracking-wide transition-colors border border-cream/10 px-3 py-2 rounded"
+              className="flex items-center gap-1.5 text-ink/70 hover:text-ink text-[12px] font-body font-medium transition-colors border border-ink/15 hover:border-ink/40 px-3 py-2 rounded-lg"
             >
               <LogOut size={13} /> Logout
             </button>
           </div>
-        </div>
+        </header>
 
         {/* Status flash */}
         {msg && (
-          <div className="mb-6 text-center font-marker text-mustard text-base animate-bounce">
+          <div className="mb-6 inline-flex items-center gap-2 bg-ink text-bone px-4 py-2 rounded-full font-mono text-[11px] uppercase tracking-[0.2em]">
+            <span className="w-1.5 h-1.5 rounded-full bg-clay animate-pulseSoft" />
             {msg}
           </div>
         )}
 
         {/* Team score cards */}
-        <div className="grid sm:grid-cols-2 gap-6 mb-10">
-          {TEAMS.map((team) => (
+        <div className="grid sm:grid-cols-2 gap-4 mb-12">
+          {TEAMS.map((team, i) => (
             <div
               key={team.id}
-              className="bg-white/5 border border-cream/8 rounded-sm p-5"
+              className="bg-paper border border-ink/8 rounded-2xl overflow-hidden"
             >
-              {/* Team header */}
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-2">
-                  <span className="text-2xl">{team.emoji}</span>
-                  <h2 className="font-display text-cream text-base uppercase tracking-wide">
-                    {team.name}
-                  </h2>
+              <div className="h-1 w-full" style={{ background: team.color }} aria-hidden="true" />
+              <div className="p-5">
+                <div className="flex items-start justify-between mb-5">
+                  <div>
+                    <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted mb-1">
+                      Team 0{i + 1}
+                    </p>
+                    <h2 className="display text-xl font-semibold text-ink tracking-editorial leading-tight">
+                      {team.name}
+                    </h2>
+                  </div>
+                  <span className="display text-5xl font-semibold text-ink tabular-nums leading-none">
+                    {scores[team.id] ?? 0}
+                  </span>
                 </div>
-                <span
-                  className="font-display text-3xl"
-                  style={{ color: team.color }}
-                >
-                  {scores[team.id] ?? 0}
-                </span>
-              </div>
 
-              {/* Quick-adjust buttons */}
-              <div className="flex flex-wrap gap-1.5 mb-4">
-                {quickDeltas.map((d) => (
+                {/* Quick-adjust chips */}
+                <div className="flex flex-wrap gap-1.5 mb-4">
+                  {quickDeltas.map((d) => (
+                    <button
+                      key={d}
+                      disabled={loading}
+                      onClick={() => patch({ teamId: team.id, delta: d })}
+                      className="text-[11px] font-mono uppercase tracking-[0.1em] px-2.5 py-1 rounded-md border border-ink/15 text-ink/80 hover:bg-ink hover:text-bone hover:border-ink transition-colors disabled:opacity-40"
+                    >
+                      +{d}
+                    </button>
+                  ))}
+                </div>
+
+                {/* +/- and set */}
+                <div className="flex gap-2">
                   <button
-                    key={d}
                     disabled={loading}
-                    onClick={() => patch({ teamId: team.id, delta: d })}
-                    className="text-xs font-display uppercase tracking-wide px-2.5 py-1 rounded transition-all hover:scale-105 active:scale-95"
-                    style={{ background: `${team.color}55`, color: "#f4ead5", border: `1px solid ${team.color}80` }}
+                    onClick={() => patch({ teamId: team.id, delta: -10 })}
+                    className="flex items-center gap-1 px-3 py-2 bg-bone border border-ink/15 hover:border-ink/40 text-ink/80 rounded-lg text-[12px] font-body font-medium transition-colors disabled:opacity-40"
                   >
-                    +{d}
+                    <Minus size={12} /> 10
                   </button>
-                ))}
-              </div>
-
-              {/* +/- and set */}
-              <div className="flex gap-2">
-                <button
-                  disabled={loading}
-                  onClick={() => patch({ teamId: team.id, delta: -10 })}
-                  className="flex items-center gap-1 px-3 py-2 bg-white/5 hover:bg-white/10 text-cream/70 rounded text-xs font-body transition-colors border border-cream/10"
-                >
-                  <Minus size={12} /> 10
-                </button>
-                <button
-                  disabled={loading}
-                  onClick={() => patch({ teamId: team.id, delta: 10 })}
-                  className="flex items-center gap-1 px-3 py-2 bg-white/5 hover:bg-white/10 text-cream/70 rounded text-xs font-body transition-colors border border-cream/10"
-                >
-                  <Plus size={12} /> 10
-                </button>
-                <SetScoreInput
-                  teamId={team.id}
-                  current={scores[team.id] ?? 0}
-                  onSet={(v) => patch({ teamId: team.id, value: v })}
-                  disabled={loading}
-                />
+                  <button
+                    disabled={loading}
+                    onClick={() => patch({ teamId: team.id, delta: 10 })}
+                    className="flex items-center gap-1 px-3 py-2 bg-bone border border-ink/15 hover:border-ink/40 text-ink/80 rounded-lg text-[12px] font-body font-medium transition-colors disabled:opacity-40"
+                  >
+                    <Plus size={12} /> 10
+                  </button>
+                  <SetScoreInput
+                    teamId={team.id}
+                    current={scores[team.id] ?? 0}
+                    onSet={(v) => patch({ teamId: team.id, value: v })}
+                    disabled={loading}
+                  />
+                </div>
               </div>
             </div>
           ))}
         </div>
 
-        {/* Quick reference: scoring chart */}
-        <div className="bg-white/4 border border-cream/8 rounded-sm p-6">
-          <h3 className="font-display text-cream/60 text-sm uppercase tracking-widest mb-4">
-            Scoring Reference
-          </h3>
-          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-4 text-xs font-body text-cream/50">
+        {/* Scoring reference */}
+        <div className="bg-paper border border-ink/8 rounded-2xl p-6">
+          <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-muted mb-4">
+            Scoring reference
+          </p>
+          <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-5">
             {SCORING.map((tier) => (
               <div key={tier.id}>
-                <p className="font-display text-cream/70 text-xs uppercase tracking-wide mb-1">
-                  {tier.label}
+                <p className="display text-base font-semibold text-ink mb-1">{tier.label}</p>
+                <p className="font-mono text-[12px] text-ink/70 tabular-nums">
+                  {tier.points.join(" · ")}
                 </p>
-                <p className="text-cream/40">{tier.points.join(" / ")} pts</p>
-                <p className="text-cream/30 text-xs">{tier.note}</p>
+                <p className="text-[12px] text-muted mt-1 leading-snug">{tier.note}</p>
               </div>
             ))}
             <div>
-              <p className="font-display text-mustard/70 text-xs uppercase tracking-wide mb-1">
-                {PHOTO_BONUS.label}
+              <p className="display text-base font-semibold text-ink mb-1">{PHOTO_BONUS.label}</p>
+              <p className="font-mono text-[12px] text-ink/70 tabular-nums">
+                +{PHOTO_BONUS.points} / item
               </p>
-              <p className="text-cream/40">+{PHOTO_BONUS.points} per item</p>
             </div>
           </div>
         </div>
@@ -197,7 +202,6 @@ export default function AdminPage() {
   );
 }
 
-// Small inline input for "set score to exact value".
 function SetScoreInput({
   teamId,
   current,
@@ -218,7 +222,7 @@ function SetScoreInput({
         type="number"
         value={val}
         onChange={(e) => setVal(e.target.value)}
-        className="flex-1 min-w-0 bg-black/20 border border-cream/15 rounded text-cream text-xs font-body px-2 py-2 focus:outline-none focus:border-mustard/50"
+        className="flex-1 min-w-0 bg-bone border border-ink/15 rounded-lg text-ink text-[13px] font-mono tabular-nums px-3 py-2 focus:outline-none focus:border-ink/50"
         aria-label={`Set score for ${teamId}`}
       />
       <button
@@ -227,7 +231,7 @@ function SetScoreInput({
           const n = parseInt(val, 10);
           if (!isNaN(n)) onSet(n);
         }}
-        className="px-3 py-2 bg-mustard/80 hover:bg-mustard text-charcoal rounded text-xs font-display uppercase tracking-wide transition-colors"
+        className="px-3 py-2 bg-ink hover:bg-forest text-bone rounded-lg text-[12px] font-body font-semibold transition-colors disabled:opacity-40"
       >
         Set
       </button>
