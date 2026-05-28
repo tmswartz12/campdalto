@@ -69,7 +69,7 @@ export interface Team {
 export const TEAMS: Team[] = [
   {
     id: "fire",
-    name: "Team 1",
+    name: "The Burn Unit",
     color: "#c8553d",
     ink: "#f4ead5",
     emoji: "🔥",
@@ -86,7 +86,7 @@ export const TEAMS: Team[] = [
   },
   {
     id: "liberty",
-    name: "Team 2",
+    name: "Lady Liberty's Goons",
     color: "#4a8a82",
     ink: "#f4ead5",
     emoji: "🗽",
@@ -103,7 +103,7 @@ export const TEAMS: Team[] = [
   },
   {
     id: "grad",
-    name: "Team 3",
+    name: "The Class Clowns",
     color: "#1e3a5f",
     ink: "#f4ead5",
     emoji: "🎓",
@@ -120,7 +120,7 @@ export const TEAMS: Team[] = [
   },
   {
     id: "dice",
-    name: "Team 4",
+    name: "Snake Eyes",
     color: "#8b1e3f",
     ink: "#f4ead5",
     emoji: "🎲",
