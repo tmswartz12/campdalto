@@ -1,27 +1,33 @@
 "use client";
 // Commissioner's control panel — only accessible with the admin password.
-// Set points, adjust by delta, or reset. The scoreboard on the main site
-// auto-refreshes and will pick up any changes within 15 seconds.
+// Set points, adjust by delta, or reset. Optimistic UI: the number bumps the
+// instant you click, then settles with whatever the server confirmed. On
+// failure we revert and flash the error. The public scoreboard polls every
+// 15s and will pick up the change.
 
-import { useState, useEffect, useCallback } from "react";
-import { RefreshCw, Plus, Minus, RotateCcw, LogOut } from "lucide-react";
+import { useState, useEffect, useCallback, useRef } from "react";
+import { RefreshCw, Plus, Minus, RotateCcw, LogOut, Loader2 } from "lucide-react";
 import { TEAMS, SCORING, SCORING_BONUSES } from "@/lib/content";
 import { useRouter } from "next/navigation";
 
 type Scores = Record<string, number>;
+type FlashKind = "ok" | "err" | null;
+
+const ZERO_SCORES: Scores = Object.fromEntries(TEAMS.map((t) => [t.id, 0]));
 
 export default function AdminPage() {
   const router = useRouter();
-  const [scores, setScores] = useState<Scores>(() =>
-    Object.fromEntries(TEAMS.map((t) => [t.id, 0]))
-  );
-  const [loading, setLoading] = useState(false);
-  const [msg, setMsg] = useState("");
+  const [scores, setScores] = useState<Scores>(ZERO_SCORES);
+  const [pendingTeam, setPendingTeam] = useState<string | null>(null);
+  const [resetting, setResetting] = useState(false);
+  const [flash, setFlash] = useState<{ text: string; kind: FlashKind }>({ text: "", kind: null });
+  const flashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const flash = (text: string) => {
-    setMsg(text);
-    setTimeout(() => setMsg(""), 2500);
-  };
+  const showFlash = useCallback((text: string, kind: FlashKind) => {
+    if (flashTimer.current) clearTimeout(flashTimer.current);
+    setFlash({ text, kind });
+    flashTimer.current = setTimeout(() => setFlash({ text: "", kind: null }), 2500);
+  }, []);
 
   const fetchScores = useCallback(async () => {
     const res = await fetch("/api/scores", { cache: "no-store" });
@@ -32,23 +38,50 @@ export default function AdminPage() {
     fetchScores();
   }, [fetchScores]);
 
-  async function patch(body: object) {
-    setLoading(true);
+  // Single source of truth for sending a score change. Optimistically updates
+  // local state, then reconciles with the server response. Reverts on error.
+  async function patch(
+    body: { teamId?: string; delta?: number; value?: number; reset?: boolean },
+    optimistic: Scores,
+  ) {
+    const previous = scores;
+    setScores(optimistic);
+    if (body.teamId) setPendingTeam(body.teamId);
+    if (body.reset) setResetting(true);
+
     try {
       const res = await fetch("/api/scores", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      if (res.ok) {
-        setScores(await res.json());
-        flash("Saved");
-      } else {
-        flash("Error — check the console.");
-      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const confirmed: Scores = await res.json();
+      setScores(confirmed);
+      showFlash(body.reset ? "All scores reset" : "Saved", "ok");
+    } catch (err) {
+      setScores(previous);
+      showFlash("Failed to save — try again", "err");
+      console.error("Score update failed", err);
     } finally {
-      setLoading(false);
+      setPendingTeam(null);
+      setResetting(false);
     }
+  }
+
+  function bump(teamId: string, delta: number) {
+    const next = { ...scores, [teamId]: (scores[teamId] ?? 0) + delta };
+    patch({ teamId, delta }, next);
+  }
+
+  function setTo(teamId: string, value: number) {
+    const next = { ...scores, [teamId]: value };
+    patch({ teamId, value }, next);
+  }
+
+  function resetAll() {
+    if (!confirm("Reset ALL scores to 0? This cannot be undone.")) return;
+    patch({ reset: true }, ZERO_SCORES);
   }
 
   async function logout() {
@@ -72,7 +105,7 @@ export default function AdminPage() {
               Scoreboard control
             </h1>
             <p className="mt-2 text-sm text-muted">
-              Changes propagate to the live board within 15 seconds.
+              Changes save instantly to the Blob store. The public board polls every 15s.
             </p>
           </div>
           <div className="flex gap-2">
@@ -83,12 +116,9 @@ export default function AdminPage() {
               <RefreshCw size={13} /> Refresh
             </button>
             <button
-              onClick={() => {
-                if (confirm("Reset ALL scores to 0? This cannot be undone.")) {
-                  patch({ reset: true });
-                }
-              }}
-              className="flex items-center gap-1.5 text-clay hover:text-clay/80 text-[12px] font-body font-medium transition-colors border border-clay/40 hover:border-clay px-3 py-2 rounded-lg"
+              onClick={resetAll}
+              disabled={resetting}
+              className="flex items-center gap-1.5 text-clay hover:text-clay/80 text-[12px] font-body font-medium transition-colors border border-clay/40 hover:border-clay px-3 py-2 rounded-lg disabled:opacity-40"
             >
               <RotateCcw size={13} /> Reset all
             </button>
@@ -102,76 +132,98 @@ export default function AdminPage() {
         </header>
 
         {/* Status flash */}
-        {msg && (
-          <div className="mb-6 inline-flex items-center gap-2 bg-ink text-bone px-4 py-2 rounded-full font-mono text-[11px] uppercase tracking-[0.2em]">
-            <span className="w-1.5 h-1.5 rounded-full bg-clay animate-pulseSoft" />
-            {msg}
+        {flash.kind && (
+          <div
+            className={`mb-6 inline-flex items-center gap-2 px-4 py-2 rounded-full font-mono text-[11px] uppercase tracking-[0.2em] ${
+              flash.kind === "ok"
+                ? "bg-ink text-bone"
+                : "bg-clay text-bone"
+            }`}
+          >
+            <span
+              className={`w-1.5 h-1.5 rounded-full ${
+                flash.kind === "ok" ? "bg-clay animate-pulseSoft" : "bg-bone"
+              }`}
+            />
+            {flash.text}
           </div>
         )}
 
         {/* Team score cards */}
         <div className="grid sm:grid-cols-2 gap-4 mb-12">
-          {TEAMS.map((team, i) => (
-            <div
-              key={team.id}
-              className="bg-paper border border-ink/8 rounded-2xl overflow-hidden"
-            >
-              <div className="h-1 w-full" style={{ background: team.color }} aria-hidden="true" />
-              <div className="p-5">
-                <div className="flex items-start justify-between mb-5">
-                  <div>
-                    <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted mb-1">
-                      Team 0{i + 1}
-                    </p>
-                    <h2 className="display text-xl font-semibold text-ink tracking-editorial leading-tight">
-                      {team.name}
-                    </h2>
-                  </div>
-                  <span className="display text-5xl font-semibold text-ink tabular-nums leading-none">
-                    {scores[team.id] ?? 0}
-                  </span>
-                </div>
-
-                {/* Quick-adjust chips */}
-                <div className="flex flex-wrap gap-1.5 mb-4">
-                  {quickDeltas.map((d) => (
-                    <button
-                      key={d}
-                      disabled={loading}
-                      onClick={() => patch({ teamId: team.id, delta: d })}
-                      className="text-[11px] font-mono uppercase tracking-[0.1em] px-2.5 py-1 rounded-md border border-ink/15 text-ink/80 hover:bg-ink hover:text-bone hover:border-ink transition-colors disabled:opacity-40"
+          {TEAMS.map((team, i) => {
+            const isPending = pendingTeam === team.id;
+            return (
+              <div
+                key={team.id}
+                className={`bg-paper border rounded-2xl overflow-hidden transition-colors ${
+                  isPending ? "border-ink/40" : "border-ink/8"
+                }`}
+              >
+                <div className="h-1 w-full" style={{ background: team.color }} aria-hidden="true" />
+                <div className="p-5">
+                  <div className="flex items-start justify-between mb-5">
+                    <div>
+                      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted mb-1 flex items-center gap-2">
+                        <span>{team.emoji}</span> Team 0{i + 1}
+                        {isPending && (
+                          <Loader2 size={11} className="animate-spin text-ink/40" />
+                        )}
+                      </p>
+                      <h2 className="display text-xl font-semibold text-ink tracking-editorial leading-tight">
+                        {team.name}
+                      </h2>
+                    </div>
+                    <span
+                      className={`display text-5xl font-semibold tabular-nums leading-none transition-colors ${
+                        isPending ? "text-clay" : "text-ink"
+                      }`}
                     >
-                      +{d}
-                    </button>
-                  ))}
-                </div>
+                      {scores[team.id] ?? 0}
+                    </span>
+                  </div>
 
-                {/* +/- and set */}
-                <div className="flex gap-2">
-                  <button
-                    disabled={loading}
-                    onClick={() => patch({ teamId: team.id, delta: -10 })}
-                    className="flex items-center gap-1 px-3 py-2 bg-bone border border-ink/15 hover:border-ink/40 text-ink/80 rounded-lg text-[12px] font-body font-medium transition-colors disabled:opacity-40"
-                  >
-                    <Minus size={12} /> 10
-                  </button>
-                  <button
-                    disabled={loading}
-                    onClick={() => patch({ teamId: team.id, delta: 10 })}
-                    className="flex items-center gap-1 px-3 py-2 bg-bone border border-ink/15 hover:border-ink/40 text-ink/80 rounded-lg text-[12px] font-body font-medium transition-colors disabled:opacity-40"
-                  >
-                    <Plus size={12} /> 10
-                  </button>
-                  <SetScoreInput
-                    teamId={team.id}
-                    current={scores[team.id] ?? 0}
-                    onSet={(v) => patch({ teamId: team.id, value: v })}
-                    disabled={loading}
-                  />
+                  {/* Quick-adjust chips */}
+                  <div className="flex flex-wrap gap-1.5 mb-4">
+                    {quickDeltas.map((d) => (
+                      <button
+                        key={d}
+                        disabled={isPending}
+                        onClick={() => bump(team.id, d)}
+                        className="text-[11px] font-mono uppercase tracking-[0.1em] px-2.5 py-1 rounded-md border border-ink/15 text-ink/80 hover:bg-ink hover:text-bone hover:border-ink transition-colors disabled:opacity-40"
+                      >
+                        +{d}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* +/- and set */}
+                  <div className="flex gap-2">
+                    <button
+                      disabled={isPending}
+                      onClick={() => bump(team.id, -10)}
+                      className="flex items-center gap-1 px-3 py-2 bg-bone border border-ink/15 hover:border-ink/40 text-ink/80 rounded-lg text-[12px] font-body font-medium transition-colors disabled:opacity-40"
+                    >
+                      <Minus size={12} /> 10
+                    </button>
+                    <button
+                      disabled={isPending}
+                      onClick={() => bump(team.id, 10)}
+                      className="flex items-center gap-1 px-3 py-2 bg-bone border border-ink/15 hover:border-ink/40 text-ink/80 rounded-lg text-[12px] font-body font-medium transition-colors disabled:opacity-40"
+                    >
+                      <Plus size={12} /> 10
+                    </button>
+                    <SetScoreInput
+                      teamId={team.id}
+                      current={scores[team.id] ?? 0}
+                      onSet={(v) => setTo(team.id, v)}
+                      disabled={isPending}
+                    />
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {/* Scoring reference */}
@@ -192,9 +244,7 @@ export default function AdminPage() {
             {SCORING_BONUSES.map((b) => (
               <div key={b.id}>
                 <p className="display text-base font-semibold text-ink mb-1">{b.label}</p>
-                <p className="font-mono text-[12px] text-ink/70 tabular-nums">
-                  +{b.points}
-                </p>
+                <p className="font-mono text-[12px] text-ink/70 tabular-nums">+{b.points}</p>
                 <p className="text-[12px] text-muted mt-1 leading-snug">{b.note}</p>
               </div>
             ))}
@@ -217,13 +267,20 @@ function SetScoreInput({
   disabled: boolean;
 }) {
   const [val, setVal] = useState(String(current));
-  useEffect(() => setVal(String(current)), [current]);
+  // Sync the input when the server-confirmed score changes, unless the user
+  // is currently editing (focus held).
+  const isFocused = useRef(false);
+  useEffect(() => {
+    if (!isFocused.current) setVal(String(current));
+  }, [current]);
 
   return (
     <div className="flex gap-1 flex-1">
       <input
         type="number"
         value={val}
+        onFocus={() => (isFocused.current = true)}
+        onBlur={() => (isFocused.current = false)}
         onChange={(e) => setVal(e.target.value)}
         className="flex-1 min-w-0 bg-bone border border-ink/15 rounded-lg text-ink text-[13px] font-mono tabular-nums px-3 py-2 focus:outline-none focus:border-ink/50"
         aria-label={`Set score for ${teamId}`}
