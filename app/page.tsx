@@ -4,6 +4,7 @@ import Mission from "@/components/sections/Mission";
 import Teams from "@/components/sections/Teams";
 import Schedule from "@/components/sections/Schedule";
 import Events from "@/components/sections/Events";
+import Matchups from "@/components/sections/Matchups";
 import Scoring from "@/components/sections/Scoring";
 import ChugOff from "@/components/sections/ChugOff";
 import BeerMile from "@/components/sections/BeerMile";
@@ -23,6 +24,7 @@ export default function Home() {
       <Teams />
       <Schedule />
       <Events />
+      <Matchups />
       <Scoring />
       <ChugOff />
       <BeerMile />

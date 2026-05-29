@@ -73,6 +73,15 @@ export default function Schedule() {
                       <p className="mt-1 text-bone/55 text-[14px] md:text-[15px] leading-relaxed">
                         {ev.desc}
                       </p>
+                      {ev.matchupId && (
+                        <a
+                          href={`#${ev.matchupId}`}
+                          className="inline-flex items-center gap-1.5 mt-2 font-mono text-[10px] uppercase tracking-[0.2em] text-clay hover:text-sun transition-colors"
+                        >
+                          View matchups
+                          <span aria-hidden="true">→</span>
+                        </a>
+                      )}
                     </div>
                   </motion.li>
                 ))}

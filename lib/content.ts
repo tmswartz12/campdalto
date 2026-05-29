@@ -23,6 +23,7 @@ export const NAV_LINKS = [
   { href: "#teams", label: "Teams" },
   { href: "#schedule", label: "Schedule" },
   { href: "#events", label: "Events" },
+  { href: "#matchups", label: "Matchups" },
   { href: "#scoring", label: "Scoring" },
   { href: "#scoreboard", label: "Scores" },
   { href: "#rob", label: "Rob" },
@@ -147,6 +148,8 @@ export interface Activity {
   title: string;
   desc: string;
   icon: string;
+  /** Optional anchor id in the Matchups section. Renders a "View matchups" link on the row. */
+  matchupId?: string;
 }
 export interface Day {
   id: string;
@@ -165,7 +168,7 @@ export const ITINERARY: Day[] = [
       { time: "5:00 PM", title: "Arrival & Cabin Check-In", desc: "Claim your bunk. Drop your bags. Start stretching — you'll need it.", icon: "Home" },
       { time: "5:30 PM", title: "Opening Ceremony & Team Draft", desc: "Four tribes drawn. Captains pick. Alliances form, then collapse before dinner.", icon: "Flag" },
       { time: "6:00 PM", title: "Dinner", desc: "Carbs. Hydrate. Tomorrow you bleed for points.", icon: "UtensilsCrossed" },
-      { time: "7:00 PM – 12:00 AM", title: "Lakeside Fire Pit + Flip Cup", desc: "Flip Cup begins (best of 7). First points hit the board. Spill at your own peril.", icon: "Flame" },
+      { time: "7:00 PM – 12:00 AM", title: "Lakeside Fire Pit + Flip Cup", desc: "Flip Cup round robin → bronze + final. First points hit the board, and Friday's standings seed Saturday's brackets. Spill at your own peril.", icon: "Flame", matchupId: "matchup-flip-cup" },
     ],
   },
   {
@@ -175,14 +178,14 @@ export const ITINERARY: Day[] = [
     events: [
       { time: "6:30 AM", title: "The Long Run", desc: "Optional in name only. Whoever logs the longest miles earns their tribe +10. Pace honor system, distance not.", icon: "Footprints" },
       { time: "8:00 AM", title: "Breakfast + Uno Tournament", desc: "A peaceful breakfast and a vicious game of Uno. No friendship survives a +4.", icon: "UtensilsCrossed" },
-      { time: "9:30 AM", title: "Tug of War", desc: "Four teams. One rope. Cleats highly encouraged.", icon: "Anchor" },
-      { time: "10:30 AM", title: "Skills Block + Beer Mile", desc: "Free throws. Football throw. Base relay. Then four laps, four beers, full Major points on the line.", icon: "Target" },
+      { time: "9:30 AM", title: "Tug of War", desc: "Four teams. One rope. Cleats highly encouraged.", icon: "Anchor", matchupId: "matchup-tug-of-war" },
+      { time: "10:30 AM", title: "Skills Block + Beer Mile", desc: "Free throws. Football throw. Base relay. Then four laps, four beers, full Major points on the line.", icon: "Target", matchupId: "matchup-base-relay" },
       { time: "12:30 PM", title: "Lunch + Chess & Cards", desc: "Refuel. Then out-think them at the board. Out-bluff them at the table.", icon: "Spade" },
-      { time: "2:00 PM", title: "Wiffle Ball Tournament", desc: "Backyard legends are born here. Bat flips mandatory.", icon: "CircleDot" },
-      { time: "3:45 PM", title: "Cornhole + Pickleball", desc: "Cornhole into pickleball. The two most dangerous sports in America.", icon: "Crosshair" },
+      { time: "2:00 PM", title: "Wiffle Ball Tournament", desc: "Backyard legends are born here. Bat flips mandatory.", icon: "CircleDot", matchupId: "matchup-wiffle-ball" },
+      { time: "3:45 PM", title: "Cornhole + Pickleball", desc: "Cornhole on the boards, pickleball on the courts — both brackets run in parallel.", icon: "Crosshair", matchupId: "matchup-cornhole" },
       { time: "5:15 PM", title: "Free Time", desc: "Lake. Hammock. Emergency strategy session. Ice bath if you're smart.", icon: "Sun" },
       { time: "6:00 PM", title: "Dinner", desc: "The calm before the dodgeball storm.", icon: "UtensilsCrossed" },
-      { time: "7:00 PM", title: "Dodgeball — The Grand Finale", desc: "Biggest point swing of the weekend. No headshots. No witnesses. No prisoners.", icon: "Bomb" },
+      { time: "7:00 PM", title: "Dodgeball — The Grand Finale", desc: "Biggest point swing of the weekend. No headshots. No witnesses. No prisoners.", icon: "Bomb", matchupId: "matchup-dodgeball" },
       { time: "8:45 PM", title: "The Final Toast", desc: "Each tribe nominates one orator. Commissioner ranks. Best toast banks +50 for the tribe. Tears acceptable. Cue cards are not.", icon: "Wine" },
       { time: "9:15 PM", title: "Closing Ceremony at the Fire Pit", desc: "Champions crowned. Grievances aired. Medals handed out around the fire.", icon: "Flame" },
     ],
@@ -226,6 +229,270 @@ export const EVENTS: CampEvent[] = [
   { name: "Cards", icon: "Spade", tier: "Side", format: "Dealer's choice. Money on the line." },
   { name: "The Long Run", icon: "Footprints", tier: "Bonus", format: "Saturday 6:30 AM. Longest distance earns their tribe +10. One per camper." },
   { name: "The Final Toast", icon: "Wine", tier: "Bonus", format: "Saturday 8:45 PM. One toaster per tribe. Commissioner ranks. Best toast banks +50." },
+];
+
+// ---------------------------------------------------------------------------
+// THE MATCHUPS — brackets and round-robin schedules for each competition.
+//
+// SEEDING: Friday-night Flip Cup standings determine bracket seeds for the
+// Saturday events (Tug of War, Wiffle Ball, Cornhole, Pickleball, Dodgeball).
+// Slot strings like "Seed #1" resolve once Friday wraps. Until then, the site
+// shows the bracket shape with placeholder slots — fill in actual team names
+// here once seeding is locked.
+// ---------------------------------------------------------------------------
+export interface MatchupMatch {
+  /** Posted time for the match. */
+  time: string;
+  /** Short name for this slot — e.g. "Semi 1", "Final", "Run 1". */
+  label: string;
+  /** Home / first team. Free text so we can show "🔥 Burn Unit" or "Seed #1" or "Winner SF1". */
+  home: string;
+  /** Optional opponent — leave blank for solo timed runs (Base Relay). */
+  away?: string;
+  /** Optional venue note — "Field A", "Court 1", "Board B". */
+  venue?: string;
+}
+
+export interface MatchupRound {
+  name: string;
+  matches: MatchupMatch[];
+}
+
+export interface EventMatchup {
+  /** Anchor id — referenced from Schedule rows and NAV. */
+  id: string;
+  name: string;
+  icon: string;
+  day: "Friday" | "Saturday";
+  window: string;
+  tier: Tier;
+  /** One-line summary of how the event is run. */
+  format: string;
+  /** Optional note explaining where seeds come from. */
+  seedingNote?: string;
+  /** Optional bullet rules / clarifications. */
+  notes?: string[];
+  rounds: MatchupRound[];
+}
+
+const SEEDING_FROM_FLIP_CUP =
+  "Seeds set by Friday Flip Cup round-robin standings (head-to-head tiebreak).";
+
+export const MATCHUPS: EventMatchup[] = [
+  {
+    id: "matchup-flip-cup",
+    name: "Flip Cup",
+    icon: "GlassWater",
+    day: "Friday",
+    window: "7:15 PM – 9:00 PM",
+    tier: "Major",
+    format: "Round robin (3 games per tribe) → bronze + final. Seeds the Saturday brackets.",
+    notes: [
+      "Each game best-of-one, 6-on-6 (or even teams of whatever shows up).",
+      "Round-robin record sets the seeds for every Saturday bracket — finish 1st and you draw the 4-seed all day.",
+      "Spill your cup, you DQ. Drink with the right hand, you DQ harder.",
+    ],
+    rounds: [
+      {
+        name: "Round Robin",
+        matches: [
+          { time: "7:15 PM", label: "RR 1A", home: "🔥 Burn Unit", away: "🗽 Liberty Goons" },
+          { time: "7:15 PM", label: "RR 1B", home: "🎓 Class Clowns", away: "🎲 Snake Eyes" },
+          { time: "7:30 PM", label: "RR 2A", home: "🔥 Burn Unit", away: "🎓 Class Clowns" },
+          { time: "7:30 PM", label: "RR 2B", home: "🗽 Liberty Goons", away: "🎲 Snake Eyes" },
+          { time: "7:45 PM", label: "RR 3A", home: "🔥 Burn Unit", away: "🎲 Snake Eyes" },
+          { time: "7:45 PM", label: "RR 3B", home: "🗽 Liberty Goons", away: "🎓 Class Clowns" },
+        ],
+      },
+      {
+        name: "Placement",
+        matches: [
+          { time: "8:15 PM", label: "Bronze", home: "RR Seed #3", away: "RR Seed #4" },
+          { time: "8:30 PM", label: "FINAL", home: "RR Seed #1", away: "RR Seed #2" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "matchup-tug-of-war",
+    name: "Tug of War",
+    icon: "Anchor",
+    day: "Saturday",
+    window: "9:30 AM – 10:30 AM",
+    tier: "Major",
+    format: "Single-elim bracket. Each tribe plays at least twice: semifinal + placement match.",
+    seedingNote: SEEDING_FROM_FLIP_CUP,
+    notes: [
+      "Best 2-of-3 pulls per match. Center marker past the line = pull won.",
+      "Cleats highly encouraged. Gloves recommended.",
+      "5-min reset between matches.",
+    ],
+    rounds: [
+      {
+        name: "Semifinals",
+        matches: [
+          { time: "9:30 AM", label: "Semi 1", home: "Seed #1", away: "Seed #4" },
+          { time: "9:45 AM", label: "Semi 2", home: "Seed #2", away: "Seed #3" },
+        ],
+      },
+      {
+        name: "Placement",
+        matches: [
+          { time: "10:00 AM", label: "Bronze", home: "Loser Semi 1", away: "Loser Semi 2" },
+          { time: "10:15 AM", label: "FINAL", home: "Winner Semi 1", away: "Winner Semi 2" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "matchup-base-relay",
+    name: "Base Relay",
+    icon: "Footprints",
+    day: "Saturday",
+    window: "11:10 AM – 11:30 AM (Skills Block)",
+    tier: "Minor",
+    format: "Sequential timed runs — 4 sprinters per tribe round the bases. Fastest aggregate wins.",
+    notes: [
+      "Each tribe picks 4 runners. Touch every bag — skipping is forfeit.",
+      "Single best clock counts. No re-runs unless equipment fails.",
+      "Slowest team owes the field a chug-off after the Skills Block.",
+    ],
+    rounds: [
+      {
+        name: "Timed Runs",
+        matches: [
+          { time: "11:10 AM", label: "Run 1", home: "Seed #1" },
+          { time: "11:15 AM", label: "Run 2", home: "Seed #2" },
+          { time: "11:20 AM", label: "Run 3", home: "Seed #3" },
+          { time: "11:25 AM", label: "Run 4", home: "Seed #4" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "matchup-wiffle-ball",
+    name: "Wiffle Ball",
+    icon: "CircleDot",
+    day: "Saturday",
+    window: "2:00 PM – 3:45 PM",
+    tier: "Major",
+    format: "3-inning games. Two semis on parallel fields, then bronze + final.",
+    seedingNote: SEEDING_FROM_FLIP_CUP,
+    notes: [
+      "Two fields run simultaneously for the semis — bring your own ump if you want it called fair.",
+      "3 innings hard cap. Mercy rule at 10 runs.",
+      "Bat flips encouraged in round 1, mandatory in the final.",
+    ],
+    rounds: [
+      {
+        name: "Semifinals (parallel)",
+        matches: [
+          { time: "2:00 PM", label: "Semi 1", home: "Seed #1", away: "Seed #4", venue: "Field A" },
+          { time: "2:00 PM", label: "Semi 2", home: "Seed #2", away: "Seed #3", venue: "Field B" },
+        ],
+      },
+      {
+        name: "Placement",
+        matches: [
+          { time: "2:40 PM", label: "Bronze", home: "Loser Semi 1", away: "Loser Semi 2", venue: "Field A" },
+          { time: "3:15 PM", label: "FINAL", home: "Winner Semi 1", away: "Winner Semi 2", venue: "Field A" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "matchup-cornhole",
+    name: "Cornhole",
+    icon: "Crosshair",
+    day: "Saturday",
+    window: "3:45 PM – 5:00 PM",
+    tier: "Minor",
+    format: "Doubles, first to 15. Single-elim bracket. Runs parallel to Pickleball.",
+    seedingNote: SEEDING_FROM_FLIP_CUP,
+    notes: [
+      "Two boards in play — semis run simultaneously.",
+      "Different reps from each tribe than Pickleball — no doubling up.",
+      "First to 15, win by 1. Cancellation scoring.",
+    ],
+    rounds: [
+      {
+        name: "Semifinals (parallel)",
+        matches: [
+          { time: "3:45 PM", label: "Semi 1", home: "Seed #1", away: "Seed #4", venue: "Board A" },
+          { time: "3:45 PM", label: "Semi 2", home: "Seed #2", away: "Seed #3", venue: "Board B" },
+        ],
+      },
+      {
+        name: "Placement",
+        matches: [
+          { time: "4:15 PM", label: "Bronze", home: "Loser Semi 1", away: "Loser Semi 2", venue: "Board A" },
+          { time: "4:30 PM", label: "FINAL", home: "Winner Semi 1", away: "Winner Semi 2", venue: "Board A" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "matchup-pickleball",
+    name: "Pickleball",
+    icon: "Volleyball",
+    day: "Saturday",
+    window: "3:45 PM – 5:15 PM",
+    tier: "Minor",
+    format: "Doubles, one game to 11 (win by 2). Bracket runs parallel to Cornhole on opposite seeding.",
+    seedingNote: SEEDING_FROM_FLIP_CUP,
+    notes: [
+      "Two courts running simultaneously.",
+      "Cross-seeded against Cornhole so no one tribe can stack both bracket sides.",
+      "ATPs welcome. Foot faults are real even at camp.",
+    ],
+    rounds: [
+      {
+        name: "Semifinals (parallel)",
+        matches: [
+          { time: "3:45 PM", label: "Semi 1", home: "Seed #2", away: "Seed #3", venue: "Court 1" },
+          { time: "3:45 PM", label: "Semi 2", home: "Seed #1", away: "Seed #4", venue: "Court 2" },
+        ],
+      },
+      {
+        name: "Placement",
+        matches: [
+          { time: "4:20 PM", label: "Bronze", home: "Loser Semi 1", away: "Loser Semi 2", venue: "Court 1" },
+          { time: "4:50 PM", label: "FINAL", home: "Winner Semi 1", away: "Winner Semi 2", venue: "Court 1" },
+        ],
+      },
+    ],
+  },
+  {
+    id: "matchup-dodgeball",
+    name: "Dodgeball",
+    icon: "Bomb",
+    day: "Saturday",
+    window: "7:00 PM – 8:40 PM",
+    tier: "Major",
+    format: "Single-elim, 1v3 / 2v4 semis, then bronze + final. The Grand Finale.",
+    seedingNote: SEEDING_FROM_FLIP_CUP,
+    notes: [
+      "Standard rules: catch = out + revive, headshot = thrower out, base/king optional.",
+      "5-min match cap, last team standing wins. If both alive, side with more bodies wins.",
+      "No witnesses. No prisoners. No headshots.",
+    ],
+    rounds: [
+      {
+        name: "Semifinals",
+        matches: [
+          { time: "7:00 PM", label: "Semi 1", home: "Seed #1", away: "Seed #3" },
+          { time: "7:25 PM", label: "Semi 2", home: "Seed #2", away: "Seed #4" },
+        ],
+      },
+      {
+        name: "Placement",
+        matches: [
+          { time: "7:50 PM", label: "Bronze", home: "Loser Semi 1", away: "Loser Semi 2" },
+          { time: "8:15 PM", label: "FINAL", home: "Winner Semi 1", away: "Winner Semi 2" },
+        ],
+      },
+    ],
+  },
 ];
 
 // ---------------------------------------------------------------------------
