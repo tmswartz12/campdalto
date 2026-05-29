@@ -9,6 +9,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import { RefreshCw, Plus, Minus, RotateCcw, LogOut, Loader2 } from "lucide-react";
 import { TEAMS, SCORING, SCORING_BONUSES } from "@/lib/content";
 import { useRouter } from "next/navigation";
+import EventResultsPanel from "./EventResultsPanel";
 
 type Scores = Record<string, number>;
 type FlashKind = "ok" | "err" | null;
@@ -225,6 +226,9 @@ export default function AdminPage() {
             );
           })}
         </div>
+
+        {/* Event results — pick 1st/2nd/3rd/4th, auto-applies tier points */}
+        <EventResultsPanel onScoresChange={setScores} onFlash={showFlash} />
 
         {/* Scoring reference */}
         <div className="bg-paper border border-ink/8 rounded-2xl p-6">

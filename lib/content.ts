@@ -207,6 +207,8 @@ export const ITINERARY: Day[] = [
 export type Tier = "Major" | "Minor" | "Side" | "Bonus";
 
 export interface CampEvent {
+  /** Stable id — referenced by the results store. Don't change after camp starts. */
+  id: string;
   name: string;
   icon: string;
   tier: Tier;
@@ -214,22 +216,41 @@ export interface CampEvent {
 }
 
 export const EVENTS: CampEvent[] = [
-  { name: "Flip Cup", icon: "GlassWater", tier: "Major", format: "Best of 7. Spill your cup, you DQ." },
-  { name: "Tug of War", icon: "Anchor", tier: "Major", format: "Single-elim bracket. Cleats highly encouraged." },
-  { name: "Wiffle Ball", icon: "CircleDot", tier: "Major", format: "Round robin to final. Bat flips mandatory." },
-  { name: "Dodgeball", icon: "Bomb", tier: "Major", format: "The Grand Finale. No headshots. No witnesses." },
-  { name: "Beer Mile", icon: "Beer", tier: "Major", format: "Skills Block, Saturday morning. Four laps, four beers. One champion per tribe." },
-  { name: "Free Throws", icon: "Target", tier: "Minor", format: "Best of 10 per player. Form not graded." },
-  { name: "Football Throw", icon: "Rocket", tier: "Minor", format: "Longest accurate spiral. Wobblers don't count." },
-  { name: "Base Relay", icon: "Footprints", tier: "Minor", format: "Sprint the bases. Skipping is grounds for forfeit." },
-  { name: "Cornhole", icon: "Crosshair", tier: "Minor", format: "Doubles. First to 21. Trash talk encouraged." },
-  { name: "Pickleball", icon: "Volleyball", tier: "Minor", format: "Doubles. Win by 2. ATPs welcome." },
-  { name: "Uno", icon: "Layers", tier: "Side", format: "Stacking is legal. Friendships are not." },
-  { name: "Chess", icon: "Crown", tier: "Side", format: "Speed chess, 5-minute clock. Talking allowed." },
-  { name: "Cards", icon: "Spade", tier: "Side", format: "Dealer's choice. Money on the line." },
-  { name: "The Long Run", icon: "Footprints", tier: "Bonus", format: "Saturday 6:30 AM. Longest distance earns their tribe +10. One per camper." },
-  { name: "The Final Toast", icon: "Wine", tier: "Bonus", format: "Saturday 8:45 PM. One toaster per tribe. Commissioner ranks. Best toast banks +50." },
+  { id: "flip-cup", name: "Flip Cup", icon: "GlassWater", tier: "Major", format: "Best of 7. Spill your cup, you DQ." },
+  { id: "tug-of-war", name: "Tug of War", icon: "Anchor", tier: "Major", format: "Single-elim bracket. Cleats highly encouraged." },
+  { id: "wiffle-ball", name: "Wiffle Ball", icon: "CircleDot", tier: "Major", format: "Round robin to final. Bat flips mandatory." },
+  { id: "dodgeball", name: "Dodgeball", icon: "Bomb", tier: "Major", format: "The Grand Finale. No headshots. No witnesses." },
+  { id: "beer-mile", name: "Beer Mile", icon: "Beer", tier: "Major", format: "Skills Block, Saturday morning. Four laps, four beers. One champion per tribe." },
+  { id: "free-throws", name: "Free Throws", icon: "Target", tier: "Minor", format: "Best of 10 per player. Form not graded." },
+  { id: "football-throw", name: "Football Throw", icon: "Rocket", tier: "Minor", format: "Longest accurate spiral. Wobblers don't count." },
+  { id: "base-relay", name: "Base Relay", icon: "Footprints", tier: "Minor", format: "Sprint the bases. Skipping is grounds for forfeit." },
+  { id: "cornhole", name: "Cornhole", icon: "Crosshair", tier: "Minor", format: "Doubles. First to 21. Trash talk encouraged." },
+  { id: "pickleball", name: "Pickleball", icon: "Volleyball", tier: "Minor", format: "Doubles. Win by 2. ATPs welcome." },
+  { id: "uno", name: "Uno", icon: "Layers", tier: "Side", format: "Stacking is legal. Friendships are not." },
+  { id: "chess", name: "Chess", icon: "Crown", tier: "Side", format: "Speed chess, 5-minute clock. Talking allowed." },
+  { id: "cards", name: "Cards", icon: "Spade", tier: "Side", format: "Dealer's choice. Money on the line." },
+  { id: "long-run", name: "The Long Run", icon: "Footprints", tier: "Bonus", format: "Saturday 6:30 AM. Longest distance earns their tribe +10. One per camper." },
+  { id: "final-toast", name: "The Final Toast", icon: "Wine", tier: "Bonus", format: "Saturday 8:45 PM. One toaster per tribe. Commissioner ranks. Best toast banks +50." },
 ];
+
+// Tier → [1st, 2nd, 3rd, 4th] points. Bonuses are flat awards (see SCORING_BONUSES)
+// and aren't entered as 4-way placements — they stay on the manual +/- buttons.
+export const TIER_POINTS: Record<Tier, [number, number, number, number] | null> = {
+  Major: [100, 70, 40, 20],
+  Minor: [60, 40, 25, 15],
+  Side: [30, 20, 10, 5],
+  Bonus: null,
+};
+
+// Placement key → index into TIER_POINTS. Keep this order — drives the admin UI.
+export const PLACEMENT_KEYS = ["first", "second", "third", "fourth"] as const;
+export type PlacementKey = (typeof PLACEMENT_KEYS)[number];
+
+export type EventPlacements = Partial<Record<PlacementKey, string>>; // values are team ids
+export type ResultsMap = Record<string, EventPlacements>; // eventId → placements
+
+/** Events the admin can record 4-way placements for (Major / Minor / Side). */
+export const SCOREABLE_EVENTS = EVENTS.filter((e) => TIER_POINTS[e.tier] !== null);
 
 // ---------------------------------------------------------------------------
 // THE MATCHUPS — brackets and round-robin schedules for each competition.

@@ -1,8 +1,19 @@
 "use client";
+import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import SectionHeader from "@/components/ui/SectionHeader";
 import Icon from "@/components/ui/Icon";
-import { MATCHUPS, type EventMatchup, type Tier } from "@/lib/content";
+import {
+  MATCHUPS,
+  TEAMS,
+  TIER_POINTS,
+  PLACEMENT_KEYS,
+  PLACE_LABELS,
+  type EventMatchup,
+  type EventPlacements,
+  type ResultsMap,
+  type Tier,
+} from "@/lib/content";
 
 const TIER_DOT: Record<Tier, string> = {
   Major: "bg-clay",
@@ -23,6 +34,20 @@ const DAY_BADGE: Record<EventMatchup["day"], string> = {
   Saturday: "bg-clay/15 text-clay border-clay/30",
 };
 
+const PLACE_ACCENT = [
+  "text-clay border-clay/40 bg-clay/[0.08]", // 1st
+  "text-ink border-ink/20 bg-ink/[0.04]", // 2nd
+  "text-sun border-sun/40 bg-sun/[0.08]", // 3rd
+  "text-muted border-ink/10 bg-paper", // 4th
+];
+
+const TEAM_BY_ID = new Map(TEAMS.map((t) => [t.id, t]));
+
+/** Matchup ids are namespaced `matchup-{eventId}`; the suffix is the scoreable event id. */
+function eventIdFor(matchup: EventMatchup): string {
+  return matchup.id.replace(/^matchup-/, "");
+}
+
 function isFinal(label: string) {
   return /final/i.test(label) && !/semi/i.test(label);
 }
@@ -32,6 +57,28 @@ function isBronze(label: string) {
 }
 
 export default function Matchups() {
+  const [results, setResults] = useState<ResultsMap>({});
+
+  useEffect(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        const res = await fetch("/api/results", { cache: "no-store" });
+        if (!res.ok) return;
+        const data = (await res.json()) as ResultsMap;
+        if (!cancelled) setResults(data);
+      } catch {
+        // silently retry on next tick
+      }
+    }
+    load();
+    const id = setInterval(load, 15_000);
+    return () => {
+      cancelled = true;
+      clearInterval(id);
+    };
+  }, []);
+
   return (
     <section id="matchups" className="py-24 md:py-32 bg-bone">
       <div className="max-w-6xl mx-auto px-5 md:px-8">
@@ -48,7 +95,12 @@ export default function Matchups() {
 
         <div className="space-y-16 md:space-y-20">
           {MATCHUPS.map((event, idx) => (
-            <MatchupCard key={event.id} event={event} index={idx} />
+            <MatchupCard
+              key={event.id}
+              event={event}
+              index={idx}
+              placements={results[eventIdFor(event)]}
+            />
           ))}
         </div>
       </div>
@@ -56,7 +108,18 @@ export default function Matchups() {
   );
 }
 
-function MatchupCard({ event, index }: { event: EventMatchup; index: number }) {
+function MatchupCard({
+  event,
+  index,
+  placements,
+}: {
+  event: EventMatchup;
+  index: number;
+  placements?: EventPlacements;
+}) {
+  const tierPoints = TIER_POINTS[event.tier];
+  const hasResults = placements && Object.keys(placements).length > 0;
+
   return (
     <motion.div
       id={event.id}
@@ -91,6 +154,39 @@ function MatchupCard({ event, index }: { event: EventMatchup; index: number }) {
           </span>
         </div>
       </div>
+
+      {/* Final standings — appears once the Commissioner records placements */}
+      {hasResults && tierPoints && (
+        <div className="mb-6 rounded-xl border border-ink/10 bg-paper px-5 py-4">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-muted mb-3">
+            Final standings
+          </p>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            {PLACEMENT_KEYS.map((key, idx) => {
+              const teamId = placements![key];
+              const team = teamId ? TEAM_BY_ID.get(teamId) : undefined;
+              return (
+                <div
+                  key={key}
+                  className={`rounded-lg border px-3 py-2.5 ${PLACE_ACCENT[idx]}`}
+                >
+                  <p className="font-mono text-[10px] uppercase tracking-[0.18em] flex items-center justify-between mb-1">
+                    <span>{PLACE_LABELS[idx]}</span>
+                    <span className="tabular-nums opacity-70">+{tierPoints[idx]}</span>
+                  </p>
+                  {team ? (
+                    <p className="font-display text-[15px] font-semibold text-ink leading-snug">
+                      {team.emoji} {team.name}
+                    </p>
+                  ) : (
+                    <p className="font-display text-[13px] text-muted italic">— pending —</p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Format + seeding */}
       <div className="grid md:grid-cols-3 gap-6 mb-8">
