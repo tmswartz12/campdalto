@@ -7,6 +7,7 @@ import Events from "@/components/sections/Events";
 import Matchups from "@/components/sections/Matchups";
 import Scoring from "@/components/sections/Scoring";
 import ChugOff from "@/components/sections/ChugOff";
+import CigChallenge from "@/components/sections/CigChallenge";
 import BeerMile from "@/components/sections/BeerMile";
 import Scoreboard from "@/components/sections/Scoreboard";
 import HonoredGuest from "@/components/sections/HonoredGuest";
@@ -27,6 +28,7 @@ export default function Home() {
       <Matchups />
       <Scoring />
       <ChugOff />
+      <CigChallenge />
       <BeerMile />
       <Scoreboard />
       <Camp />

@@ -213,6 +213,8 @@ export interface CampEvent {
   icon: string;
   tier: Tier;
   format: string;
+  /** For Bonus tier only: flat points awarded to the single winning tribe. */
+  bonusPoints?: number;
 }
 
 export const EVENTS: CampEvent[] = [
@@ -229,12 +231,12 @@ export const EVENTS: CampEvent[] = [
   { id: "uno", name: "Uno", icon: "Layers", tier: "Side", format: "Stacking is legal. Friendships are not." },
   { id: "chess", name: "Chess", icon: "Crown", tier: "Side", format: "Speed chess, 5-minute clock. Talking allowed." },
   { id: "cards", name: "Cards", icon: "Spade", tier: "Side", format: "Dealer's choice. Money on the line." },
-  { id: "long-run", name: "The Long Run", icon: "Footprints", tier: "Bonus", format: "Saturday 6:30 AM. Longest distance earns their tribe +10. One per camper." },
-  { id: "final-toast", name: "The Final Toast", icon: "Wine", tier: "Bonus", format: "Saturday 8:45 PM. One toaster per tribe. Commissioner ranks. Best toast banks +50." },
+  { id: "long-run", name: "The Long Run", icon: "Footprints", tier: "Bonus", bonusPoints: 10, format: "Saturday 6:30 AM. Longest distance earns their tribe +10. One per camper." },
+  { id: "final-toast", name: "The Final Toast", icon: "Wine", tier: "Bonus", bonusPoints: 50, format: "Saturday 8:45 PM. One toaster per tribe. Commissioner ranks. Best toast banks +50." },
 ];
 
-// Tier → [1st, 2nd, 3rd, 4th] points. Bonuses are flat awards (see SCORING_BONUSES)
-// and aren't entered as 4-way placements — they stay on the manual +/- buttons.
+// Tier → [1st, 2nd, 3rd, 4th] points. Bonuses use the event's own bonusPoints
+// awarded only to the single winning tribe — see pointsForEvent() below.
 export const TIER_POINTS: Record<Tier, [number, number, number, number] | null> = {
   Major: [100, 70, 40, 20],
   Minor: [60, 40, 25, 15],
@@ -249,8 +251,27 @@ export type PlacementKey = (typeof PLACEMENT_KEYS)[number];
 export type EventPlacements = Partial<Record<PlacementKey, string>>; // values are team ids
 export type ResultsMap = Record<string, EventPlacements>; // eventId → placements
 
-/** Events the admin can record 4-way placements for (Major / Minor / Side). */
-export const SCOREABLE_EVENTS = EVENTS.filter((e) => TIER_POINTS[e.tier] !== null);
+/**
+ * Returns the points array for an event (always length 4 for the placement map).
+ * Bonus events return [bonusPoints, 0, 0, 0] — only the winning tribe scores.
+ * Returns null for unscored events.
+ */
+export function pointsForEvent(
+  event: CampEvent,
+): [number, number, number, number] | null {
+  if (event.tier === "Bonus") {
+    return event.bonusPoints ? [event.bonusPoints, 0, 0, 0] : null;
+  }
+  return TIER_POINTS[event.tier];
+}
+
+/** Events the admin can record placements for (Major / Minor / Side + scored Bonuses). */
+export const SCOREABLE_EVENTS = EVENTS.filter((e) => pointsForEvent(e) !== null);
+
+/** Bonus events with a flat single-winner award. */
+export const BONUS_EVENTS = EVENTS.filter(
+  (e) => e.tier === "Bonus" && typeof e.bonusPoints === "number",
+);
 
 // ---------------------------------------------------------------------------
 // THE MATCHUPS — brackets and round-robin schedules for each competition.
@@ -606,6 +627,30 @@ export const CLOSING_TOAST = {
   label: "The Final Toast",
   points: 50,
   note: "Each tribe nominates one toaster Saturday night. Commissioner ranks. Best toast banks +50. No cue cards.",
+};
+
+// ---------------------------------------------------------------------------
+// THE CIG CHALLENGE — feature-flagged via CIG_CHALLENGE_ENABLED
+//
+// Each team is issued one pack at Friday's opening ceremony. Every cig left
+// in the pack by closing ceremony costs the tribe 10 points. The Commissioner
+// counts leftovers Saturday night and enters them in the admin panel; the
+// penalty rolls into team totals automatically (delta-based, like placements).
+// ---------------------------------------------------------------------------
+export const CIG_CHALLENGE = {
+  /** Smokes per pack issued. */
+  packSize: 20,
+  /** Points deducted per unsmoked cig at closing. */
+  penaltyPerCig: 10,
+  blurb:
+    "Each tribe is issued one pack at the opening ceremony. By the closing ceremony Saturday night, every cig still in the pack costs your tribe 10 points. No re-gifting. No passing to civilians. No flushing the evidence — the Commissioner counts butts and pack contents at the fire pit.",
+  rules: [
+    "Each tribe receives exactly one pack at Friday's opening ceremony — 20 cigs.",
+    "Every cig left in the pack at closing ceremony = −10 points to that tribe.",
+    "No re-gifting to other tribes. No passing to civilians, dogs, or trees.",
+    "Lit it, you smoke it down to the filter (Camp Law #4) — no half-measures.",
+    "The Commissioner audits each pack at the fire pit. His count is final.",
+  ],
 };
 
 // ---------------------------------------------------------------------------

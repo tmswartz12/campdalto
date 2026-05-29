@@ -8,7 +8,7 @@ import { Loader2, Save, X } from "lucide-react";
 import {
   TEAMS,
   SCOREABLE_EVENTS,
-  TIER_POINTS,
+  pointsForEvent,
   PLACEMENT_KEYS,
   PLACE_LABELS,
   type EventPlacements,
@@ -137,10 +137,13 @@ export default function EventResultsPanel({ onScoresChange, onFlash }: Props) {
         {SCOREABLE_EVENTS.map((event) => {
           const draft = drafts[event.id] ?? {};
           const saved = results[event.id] ?? {};
-          const points = TIER_POINTS[event.tier]!;
+          const points = pointsForEvent(event)!;
+          const visibleSlots = PLACEMENT_KEYS.map((key, idx) => ({ key, idx }))
+            .filter(({ idx }) => points[idx] > 0);
           const isPending = pendingEvent === event.id;
           const isDirty = !placementsEqual(draft, saved);
-          const isComplete = PLACEMENT_KEYS.every((k) => draft[k]);
+          const isComplete = visibleSlots.every(({ key }) => draft[key]);
+          const isBonus = event.tier === "Bonus";
 
           return (
             <div
@@ -163,7 +166,8 @@ export default function EventResultsPanel({ onScoresChange, onFlash }: Props) {
                     {event.name}
                   </h3>
                   <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-muted">
-                    {event.tier} · {points.join("/")}
+                    {event.tier} ·{" "}
+                    {isBonus ? `+${points[0]} winner-take-all` : points.join("/")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
@@ -191,11 +195,17 @@ export default function EventResultsPanel({ onScoresChange, onFlash }: Props) {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                {PLACEMENT_KEYS.map((key, idx) => (
+              <div
+                className={`grid gap-2 ${
+                  visibleSlots.length === 1
+                    ? "grid-cols-1 sm:max-w-xs"
+                    : "grid-cols-2 md:grid-cols-4"
+                }`}
+              >
+                {visibleSlots.map(({ key, idx }) => (
                   <PlacementPicker
                     key={key}
-                    label={PLACE_LABELS[idx]}
+                    label={isBonus ? "Winner" : PLACE_LABELS[idx]}
                     points={points[idx]}
                     value={draft[key] ?? ""}
                     disabled={isPending}

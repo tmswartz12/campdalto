@@ -14,22 +14,26 @@
 
 import {
   TEAMS,
-  TIER_POINTS,
   PLACEMENT_KEYS,
   SCOREABLE_EVENTS,
+  CIG_CHALLENGE,
+  pointsForEvent,
   type EventPlacements,
   type ResultsMap,
-  type Tier,
 } from "@/lib/content";
 
 type Scores = Record<string, number>;
+/** Cigs remaining per team. Missing entry = "not tracked yet" (no penalty). */
+export type CigsRemaining = Record<string, number>;
 
 const SCORES_PATH = "campdalto/scores.json";
 const RESULTS_PATH = "campdalto/results.json";
+const CIGS_PATH = "campdalto/cigs.json";
 const hasBlob = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 
 const memoryScores: Scores = {};
 let memoryResults: ResultsMap = {};
+let memoryCigs: CigsRemaining = {};
 
 function withDefaults(partial: Scores): Scores {
   const out: Scores = {};
@@ -108,8 +112,8 @@ export async function setScore(teamId: string, value: number): Promise<Scores> {
 export async function resetScores(): Promise<Scores> {
   const zeroed = withDefaults({});
   await writeScores(zeroed);
-  // Wipe results too — totals and placements should never drift apart on a reset.
-  await writeResults({});
+  // Wipe results + cigs too — totals and their backing state should never drift on a reset.
+  await Promise.all([writeResults({}), writeCigs({})]);
   return zeroed;
 }
 
@@ -133,21 +137,22 @@ export async function getResults(): Promise<ResultsMap> {
 }
 
 /**
- * Compute the per-team point delta a placement set is worth, given the event's tier.
+ * Compute the per-team point delta a placement set is worth, given a points array.
  * Returns an object mapping teamId → points (negative when subtracting a prior result).
+ * For bonuses, `points` is [bonusPoints, 0, 0, 0] so only the winning tribe scores.
  */
 function placementDelta(
   placements: EventPlacements,
-  tier: Tier,
+  points: readonly [number, number, number, number],
   sign: 1 | -1,
 ): Record<string, number> {
-  const points = TIER_POINTS[tier];
-  if (!points) return {};
   const out: Record<string, number> = {};
   PLACEMENT_KEYS.forEach((key, idx) => {
     const teamId = placements[key];
     if (!teamId) return;
-    out[teamId] = (out[teamId] ?? 0) + sign * points[idx];
+    const pts = points[idx];
+    if (!pts) return;
+    out[teamId] = (out[teamId] ?? 0) + sign * pts;
   });
   return out;
 }
@@ -179,13 +184,15 @@ export async function setPlacements(
 ): Promise<PlacementsResult> {
   const event = SCOREABLE_EVENTS.find((e) => e.id === eventId);
   if (!event) throw new Error(`Unknown scoreable event: ${eventId}`);
+  const points = pointsForEvent(event);
+  if (!points) throw new Error(`Event ${eventId} has no points configured`);
 
   const clean = sanitizePlacements(placements);
   const [currentScores, currentResults] = await Promise.all([readScores(), readResults()]);
 
   const previous = currentResults[eventId] ?? {};
-  const subtract = placementDelta(previous, event.tier, -1);
-  const add = placementDelta(clean, event.tier, +1);
+  const subtract = placementDelta(previous, points, -1);
+  const add = placementDelta(clean, points, +1);
 
   const nextScores: Scores = { ...currentScores };
   for (const [teamId, pts] of Object.entries(subtract)) {
@@ -210,4 +217,86 @@ export async function setPlacements(
 /** Clear all placements for one event and refund the points it awarded. */
 export async function clearPlacements(eventId: string): Promise<PlacementsResult> {
   return setPlacements(eventId, {});
+}
+
+// -- cig challenge -----------------------------------------------------------
+
+async function readCigs(): Promise<CigsRemaining> {
+  if (!hasBlob) return { ...memoryCigs };
+  const raw = await readBlobJson<CigsRemaining>(CIGS_PATH, {});
+  const normalized: CigsRemaining = {};
+  for (const k of Object.keys(raw)) {
+    const n = Number(raw[k]);
+    if (Number.isFinite(n)) normalized[k] = clampCigs(n);
+  }
+  return normalized;
+}
+
+async function writeCigs(cigs: CigsRemaining): Promise<void> {
+  if (!hasBlob) {
+    memoryCigs = { ...cigs };
+    return;
+  }
+  await writeBlobJson(CIGS_PATH, cigs);
+}
+
+function clampCigs(n: number): number {
+  const r = Math.round(n);
+  if (r < 0) return 0;
+  if (r > CIG_CHALLENGE.packSize) return CIG_CHALLENGE.packSize;
+  return r;
+}
+
+export async function getCigs(): Promise<CigsRemaining> {
+  return await readCigs();
+}
+
+export interface CigsResult {
+  scores: Scores;
+  cigs: CigsRemaining;
+}
+
+/**
+ * Record a team's cigs remaining and roll the penalty delta into team totals.
+ * Re-saving is safe — only the difference between the new and prior penalty
+ * is applied, so the same team can be edited any number of times.
+ */
+export async function setCigsForTeam(teamId: string, remaining: number): Promise<CigsResult> {
+  const validTeamIds = new Set(TEAMS.map((t) => t.id));
+  if (!validTeamIds.has(teamId)) throw new Error(`Unknown team: ${teamId}`);
+  const next = clampCigs(remaining);
+
+  const [currentScores, currentCigs] = await Promise.all([readScores(), readCigs()]);
+  const prior = currentCigs[teamId];
+  const priorPenalty = (prior ?? 0) * CIG_CHALLENGE.penaltyPerCig;
+  const nextPenalty = next * CIG_CHALLENGE.penaltyPerCig;
+  // Penalty subtracts from the team's score; applying the delta means
+  // ADDING back the prior penalty (refund) and SUBTRACTING the new one.
+  const scoreDelta = priorPenalty - nextPenalty;
+
+  const nextScores: Scores = { ...currentScores };
+  nextScores[teamId] = (nextScores[teamId] ?? 0) + scoreDelta;
+  const normalized = withDefaults(nextScores);
+
+  const nextCigs: CigsRemaining = { ...currentCigs, [teamId]: next };
+  await Promise.all([writeScores(normalized), writeCigs(nextCigs)]);
+  return { scores: normalized, cigs: nextCigs };
+}
+
+/** Forget a team's cig entry and refund any penalty already applied. */
+export async function clearCigsForTeam(teamId: string): Promise<CigsResult> {
+  const [currentScores, currentCigs] = await Promise.all([readScores(), readCigs()]);
+  if (!(teamId in currentCigs)) {
+    return { scores: withDefaults(currentScores), cigs: currentCigs };
+  }
+  const priorPenalty = currentCigs[teamId] * CIG_CHALLENGE.penaltyPerCig;
+
+  const nextScores: Scores = { ...currentScores };
+  nextScores[teamId] = (nextScores[teamId] ?? 0) + priorPenalty;
+  const normalized = withDefaults(nextScores);
+
+  const nextCigs: CigsRemaining = { ...currentCigs };
+  delete nextCigs[teamId];
+  await Promise.all([writeScores(normalized), writeCigs(nextCigs)]);
+  return { scores: normalized, cigs: nextCigs };
 }
