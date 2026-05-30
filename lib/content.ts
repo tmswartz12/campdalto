@@ -279,7 +279,7 @@ export const EVENTS: CampEvent[] = [
   { id: "cards", name: "Cards", icon: "Spade", tier: "Side", format: "Dealer's choice. Money on the line." },
   { id: "base-relay", name: "Base Relay", icon: "Footprints", tier: "Minor", format: "Every camper runs the bases. Lowest cumulative tribe time wins." },
   { id: "wiffle-ball", name: "Wiffle Ball", icon: "CircleDot", tier: "Major", format: "Round robin to final. Bat flips mandatory." },
-  { id: "gaga", name: "Gaga", icon: "Octagon", tier: "Minor", format: "4 v 4. Round robin in the pit. Last tribe with a player standing wins each match." },
+  { id: "gaga", name: "Gaga", icon: "Octagon", tier: "Major", format: "4 v 4. Round robin in the pit. Last tribe with a player standing wins each match." },
   { id: "cornhole", name: "Cornhole", icon: "Crosshair", tier: "Minor", format: "Doubles — 2 reps per tribe. Runs parallel to Gaga." },
   // Saturday night ──────────────────────────────────────────────────────────
   { id: "final-toast", name: "The Final Toast", icon: "Wine", tier: "Bonus", bonusPoints: 50, format: "Saturday 8:45 PM. One toaster per tribe. Commissioner ranks. Best toast banks +50." },
@@ -683,7 +683,7 @@ export const MATCHUPS: EventMatchup[] = [
     icon: "Octagon",
     day: "Saturday",
     window: "4:00 PM – 4:50 PM",
-    tier: "Minor",
+    tier: "Major",
     format: "4 v 4. Round robin — 6 matches. RR standings = final placement.",
     seedingNote: SEEDING_FROM_FLIP_CUP,
     notes: [
@@ -749,8 +749,8 @@ export interface ScoreTier {
 }
 
 export const SCORING: ScoreTier[] = [
-  { id: "major", label: "Major Events", points: [100, 70, 40, 20], note: "Flip Cup · Knockout · Tug of War · Beer Mile · Dodgeball · Wiffle Ball" },
-  { id: "minor", label: "Minor Events", points: [60, 40, 25, 15], note: "Free Throws · Football · Relay · Gaga · Cornhole" },
+  { id: "major", label: "Major Events", points: [100, 70, 40, 20], note: "Flip Cup · Knockout · Tug of War · Beer Mile · Dodgeball · Wiffle Ball · Gaga" },
+  { id: "minor", label: "Minor Events", points: [60, 40, 25, 15], note: "Free Throws · Football · Relay · Cornhole" },
   { id: "side", label: "Side Games", points: [30, 20, 10, 5], note: "Uno · Chess · Cards" },
 ];
 
