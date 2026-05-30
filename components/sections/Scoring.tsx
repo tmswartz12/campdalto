@@ -91,8 +91,13 @@ export default function Scoring() {
                     {b.note}
                   </p>
                 </div>
-                <span className="font-display text-3xl md:text-4xl font-semibold text-ink tabular-nums shrink-0">
+                <span className="font-display text-3xl md:text-4xl font-semibold text-ink tabular-nums shrink-0 flex items-baseline gap-1">
                   +{b.points}
+                  {b.unit && (
+                    <span className="font-mono text-[11px] uppercase tracking-[0.18em] text-ink/55">
+                      / {b.unit}
+                    </span>
+                  )}
                 </span>
               </motion.div>
             );

@@ -266,7 +266,10 @@ export default function AdminClient({ cigChallengeEnabled }: Props) {
             {SCORING_BONUSES.map((b) => (
               <div key={b.id}>
                 <p className="display text-base font-semibold text-ink mb-1">{b.label}</p>
-                <p className="font-mono text-[12px] text-ink/70 tabular-nums">+{b.points}</p>
+                <p className="font-mono text-[12px] text-ink/70 tabular-nums">
+                  +{b.points}
+                  {b.unit && <span className="text-ink/55"> / {b.unit}</span>}
+                </p>
                 <p className="text-[12px] text-muted mt-1 leading-snug">{b.note}</p>
               </div>
             ))}

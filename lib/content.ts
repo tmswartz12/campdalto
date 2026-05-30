@@ -176,7 +176,7 @@ export const ITINERARY: Day[] = [
     label: "Saturday",
     subtitle: "Bachelor Olympics Day",
     events: [
-      { time: "6:30 AM", title: "The Long Run", desc: "Optional in name only. Whoever logs the longest miles earns their tribe +10. Pace honor system, distance not.", icon: "Footprints" },
+      { time: "6:30 AM", title: "The Long Run", desc: "Optional in name only. One designated runner per tribe banks +2 points per mile. Distance not honor system.", icon: "Footprints" },
       { time: "8:00 AM", title: "Breakfast + Uno Tournament", desc: "A peaceful breakfast and a vicious game of Uno. No friendship survives a +4.", icon: "UtensilsCrossed" },
       { time: "9:00 AM", title: "Knockout", desc: "Basketball lightning round. 4 reps per tribe, last shooter standing. Major points on the line.", icon: "Zap", matchupId: "matchup-knockout" },
       { time: "9:30 AM", title: "Tug of War", desc: "Four teams. One rope. Cleats highly encouraged.", icon: "Anchor", matchupId: "matchup-tug-of-war" },
@@ -266,7 +266,7 @@ export const EVENTS: CampEvent[] = [
     },
   },
   // Saturday morning ────────────────────────────────────────────────────────
-  { id: "long-run", name: "The Long Run", icon: "Footprints", tier: "Bonus", bonusPoints: 10, format: "Saturday 6:30 AM. Longest distance earns their tribe +10. One per camper." },
+  { id: "long-run", name: "The Long Run", icon: "Footprints", tier: "Bonus", format: "+2 points per mile run Saturday. One designated runner per tribe. Strava receipts mandatory." },
   { id: "uno", name: "Uno", icon: "Layers", tier: "Side", format: "Stacking is legal. Friendships are not." },
   { id: "knockout", name: "Knockout", icon: "Zap", tier: "Major", format: "Basketball line-up game. 4 reps per tribe. Last shooter standing wins." },
   { id: "tug-of-war", name: "Tug of War", icon: "Anchor", tier: "Major", format: "Single-elim bracket. Cleats highly encouraged." },
@@ -762,6 +762,8 @@ export interface ScoreBonus {
   id: string;
   label: string;
   points: number;
+  /** When set, the table renders "+{points} / {unit}" (e.g. "+2 / mi"). */
+  unit?: string;
   note: string;
 }
 
@@ -775,8 +777,9 @@ export const SCORING_BONUSES: ScoreBonus[] = [
   {
     id: "longrun",
     label: "Long Run",
-    points: 10,
-    note: "Saturday 6:30 AM. Longest distance logged earns their tribe the bonus.",
+    points: 2,
+    unit: "mi",
+    note: "+2 per mile, Saturday only. One designated runner per tribe — pick wisely.",
   },
 ];
 
@@ -811,11 +814,12 @@ export const BEER_MILE = {
   ],
 };
 
-// Saturday-morning long-run bonus — individual effort, team scoring.
+// Saturday long-run bonus — per-mile award, one designated runner per tribe.
 export const LONG_RUN_BONUS = {
   label: "Long Run Bonus",
-  points: 10,
-  note: "Saturday 6:30 AM. Longest run logged earns their tribe +10. Strava receipts mandatory.",
+  points: 2,
+  unit: "mi",
+  note: "+2 points per mile run Saturday. One designated runner per tribe. Strava receipts mandatory.",
 };
 
 // Saturday-night closing toast — team-nominated orator, Commissioner judges.
