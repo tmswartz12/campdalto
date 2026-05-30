@@ -88,7 +88,7 @@ export const TEAMS: Team[] = [
   {
     id: "liberty",
     name: "Lady Liberty's Goons",
-    color: "#4a8a82",
+    color: "#2c5a9e",
     ink: "#f4ead5",
     emoji: "🗽",
     motto: "Give us your beer, your wig, your trophy.",
@@ -122,8 +122,8 @@ export const TEAMS: Team[] = [
   {
     id: "dice",
     name: "Snake Eyes",
-    color: "#d4a017",
-    ink: "#2a2a2a",
+    color: "#3f6b3a",
+    ink: "#f4ead5",
     emoji: "🎲",
     motto: "The King's roll. House never folds.",
     members: [
