@@ -30,16 +30,31 @@ export type CigsRemaining = Record<string, number>;
 /** Commissioner-authored recaps, keyed by event id. Overrides the static one in content.ts. */
 export type RecapsMap = Record<string, EventRecap>;
 
+/** One person caught wearing The Wig. Newest entries first. */
+export interface WigWearer {
+  id: string;
+  name: string;
+  imageSrc: string;
+  imageAlt?: string;
+  /** Optional context — "after Tug of War", "for being slowest in Beer Mile", etc. */
+  occasion?: string;
+  /** Unix ms — used for sort + display. Set server-side on add. */
+  addedAt: number;
+}
+export type WigList = WigWearer[];
+
 const SCORES_PATH = "campdalto/scores.json";
 const RESULTS_PATH = "campdalto/results.json";
 const CIGS_PATH = "campdalto/cigs.json";
 const RECAPS_PATH = "campdalto/recaps.json";
+const WIG_PATH = "campdalto/wig.json";
 const hasBlob = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 
 const memoryScores: Scores = {};
 let memoryResults: ResultsMap = {};
 let memoryCigs: CigsRemaining = {};
 let memoryRecaps: RecapsMap = {};
+let memoryWig: WigList = [];
 
 function withDefaults(partial: Scores): Scores {
   const out: Scores = {};
@@ -387,4 +402,74 @@ export async function setRecap(
   }
   await writeRecaps(next);
   return next;
+}
+
+// -- wig wearers -------------------------------------------------------------
+
+async function readWig(): Promise<WigList> {
+  if (!hasBlob) return [...memoryWig];
+  const raw = await readBlobJson<WigList>(WIG_PATH, []);
+  // Defensive: storage might contain malformed entries from a manual edit.
+  return Array.isArray(raw)
+    ? raw.filter(
+        (w) =>
+          w &&
+          typeof w === "object" &&
+          typeof w.id === "string" &&
+          typeof w.name === "string" &&
+          typeof w.imageSrc === "string",
+      )
+    : [];
+}
+
+async function writeWig(list: WigList): Promise<void> {
+  if (!hasBlob) {
+    memoryWig = [...list];
+    return;
+  }
+  await writeBlobJson(WIG_PATH, list);
+}
+
+/** Newest first — the most recent wig wearer leads the carousel. */
+function sortWig(list: WigList): WigList {
+  return [...list].sort((a, b) => b.addedAt - a.addedAt);
+}
+
+export async function getWigWearers(): Promise<WigList> {
+  return sortWig(await readWig());
+}
+
+export interface AddWigInput {
+  name: string;
+  imageSrc: string;
+  imageAlt?: string;
+  occasion?: string;
+}
+
+export async function addWigWearer(input: AddWigInput): Promise<WigList> {
+  const name = (input.name || "").trim();
+  const imageSrc = (input.imageSrc || "").trim();
+  if (!name) throw new Error("Name is required");
+  if (!imageSrc) throw new Error("Image is required");
+
+  const entry: WigWearer = {
+    id: crypto.randomUUID(),
+    name,
+    imageSrc,
+    imageAlt: input.imageAlt?.trim() || undefined,
+    occasion: input.occasion?.trim() || undefined,
+    addedAt: Date.now(),
+  };
+
+  const current = await readWig();
+  const next = [...current, entry];
+  await writeWig(next);
+  return sortWig(next);
+}
+
+export async function removeWigWearer(id: string): Promise<WigList> {
+  const current = await readWig();
+  const next = current.filter((w) => w.id !== id);
+  await writeWig(next);
+  return sortWig(next);
 }
