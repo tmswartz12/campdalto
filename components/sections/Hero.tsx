@@ -103,7 +103,7 @@ export default function Hero() {
               className="mt-10 flex flex-wrap items-center gap-3"
             >
               <a
-                href="#schedule"
+                href="/schedule"
                 className="group inline-flex items-center gap-2 bg-bone text-ink font-body text-sm font-semibold px-5 py-3 rounded-full hover:bg-clay hover:text-bone transition-colors"
               >
                 View the itinerary
@@ -113,7 +113,7 @@ export default function Hero() {
                 />
               </a>
               <a
-                href="#scoreboard"
+                href="/#scoreboard"
                 className="group inline-flex items-center gap-2 border border-bone/30 text-bone font-body text-sm font-medium px-5 py-3 rounded-full hover:border-bone/70 transition-colors"
               >
                 Live scoreboard

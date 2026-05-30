@@ -36,9 +36,16 @@ const config: Config = {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.55" },
         },
+        // Ticker scrolls the inner row by exactly half its width — paired with
+        // a duplicated content track in <ScoreTicker /> for a seamless loop.
+        marquee: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
       },
       animation: {
         pulseSoft: "pulseSoft 2.2s ease-in-out infinite",
+        marquee: "marquee 45s linear infinite",
       },
     },
   },

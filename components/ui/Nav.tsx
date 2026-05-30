@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import { NAV_LINKS, EVENT_INFO } from "@/lib/content";
+import ScoreTicker from "@/components/ui/ScoreTicker";
 
 export default function Nav() {
   const [scrolled, setScrolled] = useState(false);
@@ -88,6 +89,9 @@ export default function Nav() {
           </ul>
         </div>
       )}
+
+      {/* Live ticker — always visible directly under the nav. */}
+      <ScoreTicker />
     </header>
   );
 }

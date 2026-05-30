@@ -12,7 +12,7 @@ export default function SchedulePage() {
   return (
     <>
       <Nav />
-      <main className="pt-14 md:pt-16">
+      <main className="pt-[5.25rem] md:pt-[5.75rem]">
         <Schedule />
       </main>
       <Footer />

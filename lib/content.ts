@@ -105,8 +105,8 @@ export const TEAMS: Team[] = [
   {
     id: "grad",
     name: "The Class Clowns",
-    color: "#1e3a5f",
-    ink: "#f4ead5",
+    color: "#e8b62a",
+    ink: "#1f1f1f",
     emoji: "🎓",
     motto: "Honor roll Saturday. Pass-out by Sunday.",
     members: [
