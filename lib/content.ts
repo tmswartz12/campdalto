@@ -767,12 +767,6 @@ export interface ScoreBonus {
 
 export const SCORING_BONUSES: ScoreBonus[] = [
   {
-    id: "chug",
-    label: "Chug-Off",
-    points: 10,
-    note: "After every event. Winning team picks the chuggers. Loser wears The Wig.",
-  },
-  {
     id: "toast",
     label: "The Final Toast",
     points: 50,
