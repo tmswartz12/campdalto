@@ -178,6 +178,7 @@ export const ITINERARY: Day[] = [
     events: [
       { time: "6:30 AM", title: "The Long Run", desc: "Optional in name only. Whoever logs the longest miles earns their tribe +10. Pace honor system, distance not.", icon: "Footprints" },
       { time: "8:00 AM", title: "Breakfast + Uno Tournament", desc: "A peaceful breakfast and a vicious game of Uno. No friendship survives a +4.", icon: "UtensilsCrossed" },
+      { time: "9:00 AM", title: "Knockout", desc: "Basketball lightning round. 4 reps per tribe, last shooter standing. Major points on the line.", icon: "Zap", matchupId: "matchup-knockout" },
       { time: "9:30 AM", title: "Tug of War", desc: "Four teams. One rope. Cleats highly encouraged.", icon: "Anchor", matchupId: "matchup-tug-of-war" },
       { time: "10:30 AM", title: "Skills Block + Beer Mile", desc: "Free throws. Football throw. Base relay. Then four laps, four beers, full Major points on the line.", icon: "Target", matchupId: "matchup-base-relay" },
       { time: "12:30 PM", title: "Lunch + Chess & Cards", desc: "Refuel. Then out-think them at the board. Out-bluff them at the table.", icon: "Spade" },
@@ -263,6 +264,7 @@ export const EVENTS: CampEvent[] = [
         "Olympics resume Saturday morning. Tug of war at 9:30. The Clowns enter with a 30-point lead and a target on their back.",
     },
   },
+  { id: "knockout", name: "Knockout", icon: "Zap", tier: "Major", format: "Basketball line-up game. 4 reps per tribe. Last shooter standing wins." },
   { id: "tug-of-war", name: "Tug of War", icon: "Anchor", tier: "Major", format: "Single-elim bracket. Cleats highly encouraged." },
   { id: "wiffle-ball", name: "Wiffle Ball", icon: "CircleDot", tier: "Major", format: "Round robin to final. Bat flips mandatory." },
   { id: "dodgeball", name: "Dodgeball", icon: "Bomb", tier: "Major", format: "The Grand Finale. No headshots. No witnesses." },
@@ -526,6 +528,34 @@ export const MATCHUPS: EventMatchup[] = [
     ],
   },
   {
+    id: "matchup-knockout",
+    name: "Knockout",
+    icon: "Zap",
+    day: "Saturday",
+    window: "9:00 AM – 9:30 AM",
+    tier: "Major",
+    format: "One free-for-all game. 4 reps per tribe (16 shooters total). Last shooter standing wins.",
+    seedingNote: SEEDING_FROM_FLIP_CUP,
+    notes: [
+      "Player ahead shoots first. If the player behind makes their shot first, the player ahead is out.",
+      "Layups, dunks, fadeaways — anything counts. No tip-outs from teammates.",
+      "Tribe placement = order the last rep from each tribe is eliminated. Last tribe alive = 1st.",
+    ],
+    rounds: [
+      {
+        name: "The Game",
+        matches: [
+          {
+            time: "9:00 AM",
+            label: "Knockout",
+            home: "All four tribes (4 reps each)",
+            venue: "Court Kaminer",
+          },
+        ],
+      },
+    ],
+  },
+  {
     id: "matchup-tug-of-war",
     name: "Tug of War",
     icon: "Anchor",
@@ -718,7 +748,7 @@ export interface ScoreTier {
 }
 
 export const SCORING: ScoreTier[] = [
-  { id: "major", label: "Major Events", points: [100, 70, 40, 20], note: "Flip Cup · Tug of War · Wiffle Ball · Dodgeball · Beer Mile" },
+  { id: "major", label: "Major Events", points: [100, 70, 40, 20], note: "Flip Cup · Knockout · Tug of War · Wiffle Ball · Dodgeball · Beer Mile" },
   { id: "minor", label: "Minor Events", points: [60, 40, 25, 15], note: "Free Throws · Football · Relay · Cornhole · Pickleball" },
   { id: "side", label: "Side Games", points: [30, 20, 10, 5], note: "Uno · Chess · Cards" },
 ];
