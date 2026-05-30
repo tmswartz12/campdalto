@@ -181,6 +181,7 @@ export const ITINERARY: Day[] = [
       { time: "9:00 AM", title: "Knockout", desc: "Basketball lightning round. 4 reps per tribe, last shooter standing. Major points on the line.", icon: "Zap", matchupId: "matchup-knockout" },
       { time: "9:30 AM", title: "Tug of War", desc: "Four teams. One rope. Cleats highly encouraged.", icon: "Anchor", matchupId: "matchup-tug-of-war" },
       { time: "10:30 AM", title: "Skills Block + Beer Mile", desc: "Free throws. Football throw. Then four laps, four beers, full Major points on the line.", icon: "Target" },
+      { time: "11:00 AM", title: "Dodgeball", desc: "Single-elim, 1v3 / 2v4 semis, then bronze + final. No headshots. No witnesses.", icon: "Bomb", matchupId: "matchup-dodgeball" },
       { time: "12:30 PM", title: "Lunch + Chess & Cards", desc: "Refuel. Then out-think them at the board. Out-bluff them at the table.", icon: "Spade" },
       { time: "2:00 PM", title: "Base Relay", desc: "Four sprinters per tribe round the bases. Fastest aggregate clock wins.", icon: "Footprints", matchupId: "matchup-base-relay" },
       { time: "2:30 PM", title: "Wiffle Ball Tournament", desc: "Backyard legends are born here. Bat flips mandatory.", icon: "CircleDot", matchupId: "matchup-wiffle-ball" },
@@ -273,6 +274,7 @@ export const EVENTS: CampEvent[] = [
   { id: "free-throws", name: "Free Throws", icon: "Target", tier: "Minor", format: "Best of 10 per player. Form not graded." },
   { id: "football-throw", name: "Football Throw", icon: "Rocket", tier: "Minor", format: "Longest accurate spiral. Wobblers don't count." },
   { id: "beer-mile", name: "Beer Mile", icon: "Beer", tier: "Major", format: "Skills Block, Saturday morning. Four laps, four beers. One champion per tribe." },
+  { id: "dodgeball", name: "Dodgeball", icon: "Bomb", tier: "Major", format: "Single-elim, 1v3 / 2v4 semis, then bronze + final. No headshots." },
   // Saturday afternoon ──────────────────────────────────────────────────────
   { id: "chess", name: "Chess", icon: "Crown", tier: "Side", format: "Speed chess, 5-minute clock. Talking allowed." },
   { id: "cards", name: "Cards", icon: "Spade", tier: "Side", format: "Dealer's choice. Money on the line." },
@@ -590,6 +592,37 @@ export const MATCHUPS: EventMatchup[] = [
     ],
   },
   {
+    id: "matchup-dodgeball",
+    name: "Dodgeball",
+    icon: "Bomb",
+    day: "Saturday",
+    window: "11:00 AM – 12:30 PM",
+    tier: "Major",
+    format: "Single-elim, 1v3 / 2v4 semis, then bronze + final.",
+    seedingNote: SEEDING_FROM_FLIP_CUP,
+    notes: [
+      "Standard rules: catch = out + revive, headshot = thrower out, base/king optional.",
+      "5-min match cap, last team standing wins. If both alive, side with more bodies wins.",
+      "No witnesses. No prisoners. No headshots.",
+    ],
+    rounds: [
+      {
+        name: "Semifinals",
+        matches: [
+          { time: "11:00 AM", label: "Semi 1", home: "🎓 Class Clowns", away: "🗽 Liberty Goons" },
+          { time: "11:25 AM", label: "Semi 2", home: "🎲 Snake Eyes", away: "🔥 Burn Unit" },
+        ],
+      },
+      {
+        name: "Placement",
+        matches: [
+          { time: "11:50 AM", label: "Bronze", home: "Loser Semi 1", away: "Loser Semi 2" },
+          { time: "12:15 PM", label: "FINAL", home: "Winner Semi 1", away: "Winner Semi 2" },
+        ],
+      },
+    ],
+  },
+  {
     id: "matchup-base-relay",
     name: "Base Relay",
     icon: "Footprints",
@@ -717,7 +750,7 @@ export interface ScoreTier {
 }
 
 export const SCORING: ScoreTier[] = [
-  { id: "major", label: "Major Events", points: [100, 70, 40, 20], note: "Flip Cup · Knockout · Tug of War · Wiffle Ball · Beer Mile" },
+  { id: "major", label: "Major Events", points: [100, 70, 40, 20], note: "Flip Cup · Knockout · Tug of War · Beer Mile · Dodgeball · Wiffle Ball" },
   { id: "minor", label: "Minor Events", points: [60, 40, 25, 15], note: "Free Throws · Football · Relay · Gaga · Cornhole" },
   { id: "side", label: "Side Games", points: [30, 20, 10, 5], note: "Uno · Chess · Cards" },
 ];
