@@ -254,6 +254,7 @@ function EventRow({
   const hasResults = placements && Object.keys(placements).length > 0;
   const points = pointsForEvent(event);
   const isBonus = event.tier === "Bonus";
+  const winnerTeam = placements?.first ? TEAM_BY_ID.get(placements.first) : undefined;
 
   return (
     <motion.div
@@ -284,6 +285,18 @@ function EventRow({
               <span className={`w-1.5 h-1.5 rounded-full ${TIER_DOT[event.tier]}`} aria-hidden="true" />
               {event.tier}
             </span>
+            {winnerTeam && (
+              <span
+                className="inline-flex items-center gap-1.5 bg-sun/15 border border-sun/40 rounded-full pl-1.5 pr-2.5 py-0.5 min-w-0"
+                title={`${winnerTeam.name} won ${event.name}`}
+              >
+                <span className="text-[13px] leading-none" aria-hidden="true">🥇</span>
+                <span aria-hidden="true">{winnerTeam.emoji}</span>
+                <span className="font-display text-[12px] md:text-[13px] font-semibold text-ink leading-none truncate max-w-[8rem] md:max-w-none">
+                  {winnerTeam.name}
+                </span>
+              </span>
+            )}
           </div>
           <div className="flex items-center gap-2 shrink-0">
             {matchup && (
