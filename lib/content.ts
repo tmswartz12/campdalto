@@ -17,16 +17,16 @@ export const EVENT_INFO = {
   couple: "Rob & Miri", // [PLACEHOLDER: the couple]
 };
 
-// Top navigation. Each href is an anchor to a section id on the page.
+// Top navigation. Anchor links use `/#section` so they work from any route
+// (Schedule lives on its own page). The Schedule entry is a full route.
 export const NAV_LINKS = [
-  { href: "#mission", label: "Mission" },
-  { href: "#teams", label: "Teams" },
-  { href: "#schedule", label: "Schedule" },
-  { href: "#events", label: "Events" },
-  { href: "#matchups", label: "Matchups" },
-  { href: "#scoring", label: "Scoring" },
-  { href: "#scoreboard", label: "Scores" },
-  { href: "#rob", label: "Rob" },
+  { href: "/#mission", label: "Mission" },
+  { href: "/#teams", label: "Teams" },
+  { href: "/schedule", label: "Schedule" },
+  { href: "/#events", label: "Events" },
+  { href: "/#scoring", label: "Scoring" },
+  { href: "/#scoreboard", label: "Scores" },
+  { href: "/#rob", label: "Rob" },
 ];
 
 // ---------------------------------------------------------------------------
@@ -206,6 +206,22 @@ export const ITINERARY: Day[] = [
 // ---------------------------------------------------------------------------
 export type Tier = "Major" | "Minor" | "Side" | "Bonus";
 
+export interface RecapStanding {
+  medal: string; // "🥇" / "🥈" / "🥉" / "4️⃣" / etc.
+  team: string;
+  points: number;
+}
+
+export interface EventRecap {
+  headline: string;       // big screaming headline, emoji ok
+  subhead: string;        // one-line dek
+  dateline?: string;      // "CAMP DALTO" — newspaper style
+  body: string[];         // paragraphs
+  standings?: RecapStanding[];
+  closing?: string;       // tease for what's next
+  image?: { src: string; alt: string }; // optional hero photo
+}
+
 export interface CampEvent {
   /** Stable id — referenced by the results store. Don't change after camp starts. */
   id: string;
@@ -215,10 +231,38 @@ export interface CampEvent {
   format: string;
   /** For Bonus tier only: flat points awarded to the single winning tribe. */
   bonusPoints?: number;
+  /** Post-event writeup. When present, the Events card becomes clickable. */
+  recap?: EventRecap;
 }
 
 export const EVENTS: CampEvent[] = [
-  { id: "flip-cup", name: "Flip Cup", icon: "GlassWater", tier: "Major", format: "Best of 7. Spill your cup, you DQ." },
+  {
+    id: "flip-cup",
+    name: "Flip Cup",
+    icon: "GlassWater",
+    tier: "Major",
+    format: "Best of 7. Spill your cup, you DQ.",
+    recap: {
+      headline: "👑 CLOWNS CROWNED KINGS OF THE CUP",
+      subhead:
+        "Undefeated Champs Survive 0-2 Hole, Outlast Gooners in Third Game 7 of the Night",
+      dateline: "CAMP DALTO",
+      body: [
+        "In a championship final that will be talked about for years, the Clowns completed a perfect Friday night, defeating the Gooners 4-3 in a seven-game thriller to claim the inaugural Camp Dalto Flip Cup title.",
+        "The Clowns finished the night undefeated across nine series, a flawless 5-0 in Game 7s, and on a seven-game tournament-winning arc that included a stunning reverse-sweep of the Burn Unit after falling behind 0-2 in the semifinal.",
+        "The Gooners mounted the comeback of the night — climbing out of a 0-2 hole in the final to take a 3-2 series lead — but couldn't close, dropping their third Game 7 of the weekend to the Clowns, all decided by a single cup.",
+        "In the bronze medal match, the Snake Eyes held serve over the Burn Unit, who finish the historic night 0-7 in series play but will be forever remembered for going up 2-0 on the eventual champions.",
+      ],
+      standings: [
+        { medal: "🥇", team: "CLOWNS", points: 100 },
+        { medal: "🥈", team: "Gooners", points: 70 },
+        { medal: "🥉", team: "Snake Eyes", points: 40 },
+        { medal: "4️⃣", team: "Burn Unit", points: 20 },
+      ],
+      closing:
+        "Olympics resume Saturday morning. Tug of war at 9:30. The Clowns enter with a 30-point lead and a target on their back.",
+    },
+  },
   { id: "tug-of-war", name: "Tug of War", icon: "Anchor", tier: "Major", format: "Single-elim bracket. Cleats highly encouraged." },
   { id: "wiffle-ball", name: "Wiffle Ball", icon: "CircleDot", tier: "Major", format: "Round robin to final. Bat flips mandatory." },
   { id: "dodgeball", name: "Dodgeball", icon: "Bomb", tier: "Major", format: "The Grand Finale. No headshots. No witnesses." },
@@ -276,23 +320,34 @@ export const BONUS_EVENTS = EVENTS.filter(
 // ---------------------------------------------------------------------------
 // THE MATCHUPS — brackets and round-robin schedules for each competition.
 //
-// SEEDING: Friday-night Flip Cup standings determine bracket seeds for the
-// Saturday events (Tug of War, Wiffle Ball, Cornhole, Pickleball, Dodgeball).
-// Slot strings like "Seed #1" resolve once Friday wraps. Until then, the site
-// shows the bracket shape with placeholder slots — fill in actual team names
-// here once seeding is locked.
+// SEEDING (LOCKED after Friday Flip Cup):
+//   #1 🎓 Class Clowns   (RR 6-0)
+//   #2 🎲 Snake Eyes      (RR 3-3, +6 cup diff)
+//   #3 🗽 Liberty Goons   (RR 3-3)
+//   #4 🔥 Burn Unit       (RR 0-6)
 // ---------------------------------------------------------------------------
 export interface MatchupMatch {
   /** Posted time for the match. */
   time: string;
   /** Short name for this slot — e.g. "Semi 1", "Final", "Run 1". */
   label: string;
-  /** Home / first team. Free text so we can show "🔥 Burn Unit" or "Seed #1" or "Winner SF1". */
+  /** Home / first team. Free text so we can show "🔥 Burn Unit" or "Winner SF1". */
   home: string;
   /** Optional opponent — leave blank for solo timed runs (Base Relay). */
   away?: string;
   /** Optional venue note — "Field A", "Court 1", "Board B". */
   venue?: string;
+  /**
+   * Post-game result. Scores are optional (e.g. third-place where only the
+   * winner was tracked); `winner` is the source of truth for highlighting.
+   * `note` shows a small badge — "Game 7", "Sweep", "Reverse Sweep", etc.
+   */
+  result?: {
+    homeScore?: number;
+    awayScore?: number;
+    winner: "home" | "away";
+    note?: string;
+  };
 }
 
 export interface MatchupRound {
@@ -318,7 +373,7 @@ export interface EventMatchup {
 }
 
 const SEEDING_FROM_FLIP_CUP =
-  "Seeds set by Friday Flip Cup round-robin standings (head-to-head tiebreak).";
+  "Seeds locked from Friday Flip Cup: #1 Clowns (6-0), #2 Snake Eyes (3-3, +6 cup diff), #3 Goons (3-3), #4 Burn Unit (0-6).";
 
 export const MATCHUPS: EventMatchup[] = [
   {
@@ -326,31 +381,146 @@ export const MATCHUPS: EventMatchup[] = [
     name: "Flip Cup",
     icon: "GlassWater",
     day: "Friday",
-    window: "7:15 PM – 9:00 PM",
+    window: "7:15 PM – 10:00 PM",
     tier: "Major",
-    format: "Round robin (3 games per tribe) → bronze + final. Seeds the Saturday brackets.",
+    format:
+      "Double round-robin (12 games) → semis (best-of-7) → bronze + final. Seeds the Saturday brackets.",
     notes: [
-      "Each game best-of-one, 6-on-6 (or even teams of whatever shows up).",
-      "Round-robin record sets the seeds for every Saturday bracket — finish 1st and you draw the 4-seed all day.",
-      "Spill your cup, you DQ. Drink with the right hand, you DQ harder.",
+      "Each series best-of-7. Spill your cup, you DQ. Right-hand drinking, you DQ harder.",
+      "RR standings after 12 games: #1 Clowns (6-0), #2 Snake Eyes (3-3, +6 cup diff), #3 Gooners (3-3), #4 Burn Unit (0-6).",
+      "Clowns went 9-0 across all series and 5-0 in Game 7s on the night.",
     ],
     rounds: [
       {
-        name: "Round Robin",
+        name: "Round Robin — Pass 1",
         matches: [
-          { time: "7:15 PM", label: "RR 1A", home: "🔥 Burn Unit", away: "🗽 Liberty Goons" },
-          { time: "7:15 PM", label: "RR 1B", home: "🎓 Class Clowns", away: "🎲 Snake Eyes" },
-          { time: "7:30 PM", label: "RR 2A", home: "🔥 Burn Unit", away: "🎓 Class Clowns" },
-          { time: "7:30 PM", label: "RR 2B", home: "🗽 Liberty Goons", away: "🎲 Snake Eyes" },
-          { time: "7:45 PM", label: "RR 3A", home: "🔥 Burn Unit", away: "🎲 Snake Eyes" },
-          { time: "7:45 PM", label: "RR 3B", home: "🗽 Liberty Goons", away: "🎓 Class Clowns" },
+          {
+            time: "7:15 PM",
+            label: "RR 1A",
+            home: "🔥 Burn Unit",
+            away: "🗽 Liberty Goons",
+            result: { homeScore: 1, awayScore: 4, winner: "away" },
+          },
+          {
+            time: "7:15 PM",
+            label: "RR 1B",
+            home: "🎓 Class Clowns",
+            away: "🎲 Snake Eyes",
+            result: { homeScore: 4, awayScore: 0, winner: "home", note: "Sweep" },
+          },
+          {
+            time: "7:30 PM",
+            label: "RR 2A",
+            home: "🔥 Burn Unit",
+            away: "🎓 Class Clowns",
+            result: { homeScore: 1, awayScore: 4, winner: "away" },
+          },
+          {
+            time: "7:30 PM",
+            label: "RR 2B",
+            home: "🗽 Liberty Goons",
+            away: "🎲 Snake Eyes",
+            result: { homeScore: 1, awayScore: 4, winner: "away" },
+          },
+          {
+            time: "7:45 PM",
+            label: "RR 3A",
+            home: "🔥 Burn Unit",
+            away: "🎲 Snake Eyes",
+            result: { homeScore: 0, awayScore: 4, winner: "away", note: "Sweep" },
+          },
+          {
+            time: "7:45 PM",
+            label: "RR 3B",
+            home: "🗽 Liberty Goons",
+            away: "🎓 Class Clowns",
+            result: { homeScore: 3, awayScore: 4, winner: "away", note: "Game 7" },
+          },
+        ],
+      },
+      {
+        name: "Round Robin — Pass 2",
+        matches: [
+          {
+            time: "8:00 PM",
+            label: "RR 4A",
+            home: "🔥 Burn Unit",
+            away: "🗽 Liberty Goons",
+            result: { homeScore: 3, awayScore: 4, winner: "away", note: "Game 7" },
+          },
+          {
+            time: "8:00 PM",
+            label: "RR 4B",
+            home: "🎓 Class Clowns",
+            away: "🎲 Snake Eyes",
+            result: { homeScore: 4, awayScore: 3, winner: "home", note: "Game 7" },
+          },
+          {
+            time: "8:15 PM",
+            label: "RR 5A",
+            home: "🔥 Burn Unit",
+            away: "🎓 Class Clowns",
+            result: { homeScore: 0, awayScore: 4, winner: "away", note: "Sweep" },
+          },
+          {
+            time: "8:15 PM",
+            label: "RR 5B",
+            home: "🗽 Liberty Goons",
+            away: "🎲 Snake Eyes",
+            result: { homeScore: 4, awayScore: 3, winner: "home", note: "Game 7" },
+          },
+          {
+            time: "8:30 PM",
+            label: "RR 6A",
+            home: "🔥 Burn Unit",
+            away: "🎲 Snake Eyes",
+            result: { homeScore: 0, awayScore: 4, winner: "away", note: "Sweep" },
+          },
+          {
+            time: "8:30 PM",
+            label: "RR 6B",
+            home: "🗽 Liberty Goons",
+            away: "🎓 Class Clowns",
+            result: { homeScore: 3, awayScore: 4, winner: "away", note: "Game 7" },
+          },
+        ],
+      },
+      {
+        name: "Semifinals",
+        matches: [
+          {
+            time: "8:45 PM",
+            label: "Semi 1",
+            home: "🎓 Class Clowns",
+            away: "🔥 Burn Unit",
+            result: { homeScore: 4, awayScore: 2, winner: "home", note: "Reverse Sweep (0-2 → 4-2)" },
+          },
+          {
+            time: "9:00 PM",
+            label: "Semi 2",
+            home: "🎲 Snake Eyes",
+            away: "🗽 Liberty Goons",
+            result: { homeScore: 3, awayScore: 4, winner: "away", note: "Game 7" },
+          },
         ],
       },
       {
         name: "Placement",
         matches: [
-          { time: "8:15 PM", label: "Bronze", home: "RR Seed #3", away: "RR Seed #4" },
-          { time: "8:30 PM", label: "FINAL", home: "RR Seed #1", away: "RR Seed #2" },
+          {
+            time: "9:30 PM",
+            label: "Bronze",
+            home: "🎲 Snake Eyes",
+            away: "🔥 Burn Unit",
+            result: { winner: "home" },
+          },
+          {
+            time: "9:45 PM",
+            label: "FINAL",
+            home: "🎓 Class Clowns",
+            away: "🗽 Liberty Goons",
+            result: { homeScore: 4, awayScore: 3, winner: "home", note: "Game 7 · Clowns survive 2-3 deficit" },
+          },
         ],
       },
     ],
@@ -373,8 +543,8 @@ export const MATCHUPS: EventMatchup[] = [
       {
         name: "Semifinals",
         matches: [
-          { time: "9:30 AM", label: "Semi 1", home: "Seed #1", away: "Seed #4" },
-          { time: "9:45 AM", label: "Semi 2", home: "Seed #2", away: "Seed #3" },
+          { time: "9:30 AM", label: "Semi 1", home: "🎓 Class Clowns", away: "🔥 Burn Unit" },
+          { time: "9:45 AM", label: "Semi 2", home: "🎲 Snake Eyes", away: "🗽 Liberty Goons" },
         ],
       },
       {
@@ -403,10 +573,10 @@ export const MATCHUPS: EventMatchup[] = [
       {
         name: "Timed Runs",
         matches: [
-          { time: "11:10 AM", label: "Run 1", home: "Seed #1" },
-          { time: "11:15 AM", label: "Run 2", home: "Seed #2" },
-          { time: "11:20 AM", label: "Run 3", home: "Seed #3" },
-          { time: "11:25 AM", label: "Run 4", home: "Seed #4" },
+          { time: "11:10 AM", label: "Run 1", home: "🎓 Class Clowns" },
+          { time: "11:15 AM", label: "Run 2", home: "🎲 Snake Eyes" },
+          { time: "11:20 AM", label: "Run 3", home: "🗽 Liberty Goons" },
+          { time: "11:25 AM", label: "Run 4", home: "🔥 Burn Unit" },
         ],
       },
     ],
@@ -429,8 +599,8 @@ export const MATCHUPS: EventMatchup[] = [
       {
         name: "Semifinals (parallel)",
         matches: [
-          { time: "2:00 PM", label: "Semi 1", home: "Seed #1", away: "Seed #4", venue: "Field A" },
-          { time: "2:00 PM", label: "Semi 2", home: "Seed #2", away: "Seed #3", venue: "Field B" },
+          { time: "2:00 PM", label: "Semi 1", home: "🎓 Class Clowns", away: "🔥 Burn Unit", venue: "Field A" },
+          { time: "2:00 PM", label: "Semi 2", home: "🎲 Snake Eyes", away: "🗽 Liberty Goons", venue: "Field B" },
         ],
       },
       {
@@ -460,8 +630,8 @@ export const MATCHUPS: EventMatchup[] = [
       {
         name: "Semifinals (parallel)",
         matches: [
-          { time: "3:45 PM", label: "Semi 1", home: "Seed #1", away: "Seed #4", venue: "Board A" },
-          { time: "3:45 PM", label: "Semi 2", home: "Seed #2", away: "Seed #3", venue: "Board B" },
+          { time: "3:45 PM", label: "Semi 1", home: "🎓 Class Clowns", away: "🔥 Burn Unit", venue: "Board A" },
+          { time: "3:45 PM", label: "Semi 2", home: "🎲 Snake Eyes", away: "🗽 Liberty Goons", venue: "Board B" },
         ],
       },
       {
@@ -491,8 +661,8 @@ export const MATCHUPS: EventMatchup[] = [
       {
         name: "Semifinals (parallel)",
         matches: [
-          { time: "3:45 PM", label: "Semi 1", home: "Seed #2", away: "Seed #3", venue: "Court 1" },
-          { time: "3:45 PM", label: "Semi 2", home: "Seed #1", away: "Seed #4", venue: "Court 2" },
+          { time: "3:45 PM", label: "Semi 1", home: "🎲 Snake Eyes", away: "🗽 Liberty Goons", venue: "Court 1" },
+          { time: "3:45 PM", label: "Semi 2", home: "🎓 Class Clowns", away: "🔥 Burn Unit", venue: "Court 2" },
         ],
       },
       {
@@ -522,8 +692,8 @@ export const MATCHUPS: EventMatchup[] = [
       {
         name: "Semifinals",
         matches: [
-          { time: "7:00 PM", label: "Semi 1", home: "Seed #1", away: "Seed #3" },
-          { time: "7:25 PM", label: "Semi 2", home: "Seed #2", away: "Seed #4" },
+          { time: "7:00 PM", label: "Semi 1", home: "🎓 Class Clowns", away: "🗽 Liberty Goons" },
+          { time: "7:25 PM", label: "Semi 2", home: "🎲 Snake Eyes", away: "🔥 Burn Unit" },
         ],
       },
       {

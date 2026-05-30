@@ -24,7 +24,7 @@ export default function Nav() {
       }`}
     >
       <nav className="max-w-7xl mx-auto px-5 md:px-8 h-14 md:h-16 flex items-center justify-between">
-        <a href="#top" className="flex items-center gap-2.5 group">
+        <a href="/" className="flex items-center gap-2.5 group">
           <Image
             src="/logo.png"
             alt=""
@@ -54,7 +54,7 @@ export default function Nav() {
           ))}
           <li className="ml-2">
             <a
-              href="#scoreboard"
+              href="/#scoreboard"
               className="font-body text-[13px] font-semibold text-bone bg-ink hover:bg-forest px-3.5 py-2 rounded-md transition-colors"
             >
               Live scores

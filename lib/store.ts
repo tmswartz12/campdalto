@@ -16,24 +16,30 @@ import {
   TEAMS,
   PLACEMENT_KEYS,
   SCOREABLE_EVENTS,
+  EVENTS,
   CIG_CHALLENGE,
   pointsForEvent,
   type EventPlacements,
+  type EventRecap,
   type ResultsMap,
 } from "@/lib/content";
 
 type Scores = Record<string, number>;
 /** Cigs remaining per team. Missing entry = "not tracked yet" (no penalty). */
 export type CigsRemaining = Record<string, number>;
+/** Commissioner-authored recaps, keyed by event id. Overrides the static one in content.ts. */
+export type RecapsMap = Record<string, EventRecap>;
 
 const SCORES_PATH = "campdalto/scores.json";
 const RESULTS_PATH = "campdalto/results.json";
 const CIGS_PATH = "campdalto/cigs.json";
+const RECAPS_PATH = "campdalto/recaps.json";
 const hasBlob = Boolean(process.env.BLOB_READ_WRITE_TOKEN);
 
 const memoryScores: Scores = {};
 let memoryResults: ResultsMap = {};
 let memoryCigs: CigsRemaining = {};
+let memoryRecaps: RecapsMap = {};
 
 function withDefaults(partial: Scores): Scores {
   const out: Scores = {};
@@ -299,4 +305,86 @@ export async function clearCigsForTeam(teamId: string): Promise<CigsResult> {
   delete nextCigs[teamId];
   await Promise.all([writeScores(normalized), writeCigs(nextCigs)]);
   return { scores: normalized, cigs: nextCigs };
+}
+
+// -- recaps ------------------------------------------------------------------
+
+const VALID_EVENT_IDS = new Set(EVENTS.map((e) => e.id));
+
+async function readRecaps(): Promise<RecapsMap> {
+  if (!hasBlob) return { ...memoryRecaps };
+  return await readBlobJson<RecapsMap>(RECAPS_PATH, {});
+}
+
+async function writeRecaps(recaps: RecapsMap): Promise<void> {
+  if (!hasBlob) {
+    memoryRecaps = { ...recaps };
+    return;
+  }
+  await writeBlobJson(RECAPS_PATH, recaps);
+}
+
+function sanitizeRecap(input: unknown): EventRecap | null {
+  if (!input || typeof input !== "object") return null;
+  const r = input as Partial<EventRecap>;
+  const headline = typeof r.headline === "string" ? r.headline.trim() : "";
+  const subhead = typeof r.subhead === "string" ? r.subhead.trim() : "";
+  if (!headline || !subhead) return null;
+
+  const body = Array.isArray(r.body)
+    ? r.body.map((p) => (typeof p === "string" ? p.trim() : "")).filter(Boolean)
+    : [];
+  if (body.length === 0) return null;
+
+  const out: EventRecap = { headline, subhead, body };
+
+  if (typeof r.dateline === "string" && r.dateline.trim()) out.dateline = r.dateline.trim();
+  if (typeof r.closing === "string" && r.closing.trim()) out.closing = r.closing.trim();
+
+  if (Array.isArray(r.standings)) {
+    const standings = r.standings
+      .map((s) => {
+        if (!s || typeof s !== "object") return null;
+        const item = s as { medal?: unknown; team?: unknown; points?: unknown };
+        const medal = typeof item.medal === "string" ? item.medal.trim() : "";
+        const team = typeof item.team === "string" ? item.team.trim() : "";
+        const points = Number(item.points);
+        if (!medal || !team || !Number.isFinite(points)) return null;
+        return { medal, team, points: Math.round(points) };
+      })
+      .filter((s): s is NonNullable<typeof s> => !!s);
+    if (standings.length > 0) out.standings = standings;
+  }
+
+  if (r.image && typeof r.image === "object") {
+    const img = r.image as { src?: unknown; alt?: unknown };
+    const src = typeof img.src === "string" ? img.src.trim() : "";
+    const alt = typeof img.alt === "string" ? img.alt.trim() : "";
+    if (src) out.image = { src, alt };
+  }
+
+  return out;
+}
+
+export async function getRecaps(): Promise<RecapsMap> {
+  return await readRecaps();
+}
+
+/** Save (or clear) a recap. Pass `null` to remove the override and fall back to the static one. */
+export async function setRecap(
+  eventId: string,
+  recap: EventRecap | null,
+): Promise<RecapsMap> {
+  if (!VALID_EVENT_IDS.has(eventId)) throw new Error(`Unknown event: ${eventId}`);
+  const current = await readRecaps();
+  const next: RecapsMap = { ...current };
+  if (recap === null) {
+    delete next[eventId];
+  } else {
+    const clean = sanitizeRecap(recap);
+    if (!clean) throw new Error("Recap missing required fields (headline, subhead, body)");
+    next[eventId] = clean;
+  }
+  await writeRecaps(next);
+  return next;
 }

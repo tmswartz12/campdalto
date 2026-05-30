@@ -1,7 +1,7 @@
 "use client";
 // Commissioner picks 1st/2nd/3rd/4th per event. Saving applies tier points
 // to team totals atomically — the existing scoreboard polling picks them up
-// within 15s, and the Matchups section also reflects the standings.
+// within 15s, and the public Events section also reflects the standings.
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Loader2, Save, X } from "lucide-react";
@@ -129,7 +129,7 @@ export default function EventResultsPanel({ onScoresChange, onFlash }: Props) {
       </div>
       <p className="text-[13px] text-muted mb-6 leading-relaxed">
         Pick 1st–4th per event. Saving applies the tier points to team totals automatically and
-        updates the public Matchups section. Change a placement to re-balance — only the delta
+        updates the public Events section. Change a placement to re-balance — only the delta
         is applied.
       </p>
 

@@ -11,6 +11,7 @@ import { TEAMS, SCORING, SCORING_BONUSES } from "@/lib/content";
 import { useRouter } from "next/navigation";
 import EventResultsPanel from "./EventResultsPanel";
 import CigChallengePanel from "./CigChallengePanel";
+import RecapPanel from "./RecapPanel";
 
 type Scores = Record<string, number>;
 type FlashKind = "ok" | "err" | null;
@@ -239,6 +240,9 @@ export default function AdminClient({ cigChallengeEnabled }: Props) {
         {cigChallengeEnabled && (
           <CigChallengePanel onScoresChange={setScores} onFlash={showFlash} />
         )}
+
+        {/* Event recaps — post-event writeups shown in the public Events modal */}
+        <RecapPanel onFlash={showFlash} />
 
         {/* Scoring reference */}
         <div className="bg-paper border border-ink/8 rounded-2xl p-6">

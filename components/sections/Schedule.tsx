@@ -75,10 +75,10 @@ export default function Schedule() {
                       </p>
                       {ev.matchupId && (
                         <a
-                          href={`#${ev.matchupId}`}
+                          href={`/#${ev.matchupId}`}
                           className="inline-flex items-center gap-1.5 mt-2 font-mono text-[10px] uppercase tracking-[0.2em] text-clay hover:text-sun transition-colors"
                         >
-                          View matchups
+                          View bracket
                           <span aria-hidden="true">→</span>
                         </a>
                       )}
