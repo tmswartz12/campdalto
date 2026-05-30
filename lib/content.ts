@@ -264,20 +264,24 @@ export const EVENTS: CampEvent[] = [
         "Olympics resume Saturday morning. Tug of war at 9:30. The Clowns enter with a 30-point lead and a target on their back.",
     },
   },
+  // Saturday morning ────────────────────────────────────────────────────────
+  { id: "long-run", name: "The Long Run", icon: "Footprints", tier: "Bonus", bonusPoints: 10, format: "Saturday 6:30 AM. Longest distance earns their tribe +10. One per camper." },
+  { id: "uno", name: "Uno", icon: "Layers", tier: "Side", format: "Stacking is legal. Friendships are not." },
   { id: "knockout", name: "Knockout", icon: "Zap", tier: "Major", format: "Basketball line-up game. 4 reps per tribe. Last shooter standing wins." },
   { id: "tug-of-war", name: "Tug of War", icon: "Anchor", tier: "Major", format: "Single-elim bracket. Cleats highly encouraged." },
-  { id: "wiffle-ball", name: "Wiffle Ball", icon: "CircleDot", tier: "Major", format: "Round robin to final. Bat flips mandatory." },
-  { id: "dodgeball", name: "Dodgeball", icon: "Bomb", tier: "Major", format: "The Grand Finale. No headshots. No witnesses." },
-  { id: "beer-mile", name: "Beer Mile", icon: "Beer", tier: "Major", format: "Skills Block, Saturday morning. Four laps, four beers. One champion per tribe." },
+  // Saturday Skills Block ───────────────────────────────────────────────────
   { id: "free-throws", name: "Free Throws", icon: "Target", tier: "Minor", format: "Best of 10 per player. Form not graded." },
   { id: "football-throw", name: "Football Throw", icon: "Rocket", tier: "Minor", format: "Longest accurate spiral. Wobblers don't count." },
   { id: "base-relay", name: "Base Relay", icon: "Footprints", tier: "Minor", format: "Sprint the bases. Skipping is grounds for forfeit." },
-  { id: "cornhole", name: "Cornhole", icon: "Crosshair", tier: "Minor", format: "Doubles. First to 21. Trash talk encouraged." },
-  { id: "pickleball", name: "Pickleball", icon: "Volleyball", tier: "Minor", format: "Doubles. Win by 2. ATPs welcome." },
-  { id: "uno", name: "Uno", icon: "Layers", tier: "Side", format: "Stacking is legal. Friendships are not." },
+  { id: "beer-mile", name: "Beer Mile", icon: "Beer", tier: "Major", format: "Skills Block, Saturday morning. Four laps, four beers. One champion per tribe." },
+  // Saturday afternoon ──────────────────────────────────────────────────────
   { id: "chess", name: "Chess", icon: "Crown", tier: "Side", format: "Speed chess, 5-minute clock. Talking allowed." },
   { id: "cards", name: "Cards", icon: "Spade", tier: "Side", format: "Dealer's choice. Money on the line." },
-  { id: "long-run", name: "The Long Run", icon: "Footprints", tier: "Bonus", bonusPoints: 10, format: "Saturday 6:30 AM. Longest distance earns their tribe +10. One per camper." },
+  { id: "wiffle-ball", name: "Wiffle Ball", icon: "CircleDot", tier: "Major", format: "Round robin to final. Bat flips mandatory." },
+  { id: "cornhole", name: "Cornhole", icon: "Crosshair", tier: "Minor", format: "Doubles. First to 21. Trash talk encouraged." },
+  { id: "pickleball", name: "Pickleball", icon: "Volleyball", tier: "Minor", format: "Doubles. Win by 2. ATPs welcome." },
+  // Saturday night ──────────────────────────────────────────────────────────
+  { id: "dodgeball", name: "Dodgeball", icon: "Bomb", tier: "Major", format: "The Grand Finale. No headshots. No witnesses." },
   { id: "final-toast", name: "The Final Toast", icon: "Wine", tier: "Bonus", bonusPoints: 50, format: "Saturday 8:45 PM. One toaster per tribe. Commissioner ranks. Best toast banks +50." },
 ];
 
