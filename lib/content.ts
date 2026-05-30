@@ -177,12 +177,12 @@ export const ITINERARY: Day[] = [
     subtitle: "Bachelor Olympics Day",
     events: [
       { time: "6:30 AM", title: "The Long Run", desc: "Optional in name only. One designated runner per tribe banks +2 points per mile. Distance not honor system.", icon: "Footprints" },
-      { time: "8:00 AM", title: "Breakfast + Uno Tournament", desc: "A peaceful breakfast and a vicious game of Uno. No friendship survives a +4.", icon: "UtensilsCrossed" },
+      { time: "8:00 AM", title: "Breakfast", desc: "Carbs in, game faces on. The day's points start in 60 minutes.", icon: "UtensilsCrossed" },
       { time: "9:00 AM", title: "Knockout", desc: "Basketball lightning round. 4 reps per tribe, last shooter standing. Major points on the line.", icon: "Zap", matchupId: "matchup-knockout" },
       { time: "9:30 AM", title: "Tug of War", desc: "Four teams. One rope. Cleats highly encouraged.", icon: "Anchor", matchupId: "matchup-tug-of-war" },
       { time: "10:30 AM", title: "Skills Block + Beer Mile", desc: "Free throws. Football throw. Then four laps, four beers, full Major points on the line.", icon: "Target" },
       { time: "11:00 AM", title: "Dodgeball", desc: "Single-elim, 1v3 / 2v4 semis, then bronze + final. No headshots. No witnesses.", icon: "Bomb", matchupId: "matchup-dodgeball" },
-      { time: "12:30 PM", title: "Lunch + Chess & Cards", desc: "Refuel. Then out-think them at the board. Out-bluff them at the table.", icon: "Spade" },
+      { time: "12:30 PM", title: "Lunch + Uno", desc: "Refuel. Then a vicious round-robin of Uno. No friendship survives a +4.", icon: "Layers" },
       { time: "2:00 PM", title: "Base Relay", desc: "Every camper runs the bases. Times stack into a single tribe clock — lowest wins.", icon: "Footprints", matchupId: "matchup-base-relay" },
       { time: "2:30 PM", title: "Wiffle Ball Tournament", desc: "Backyard legends are born here. Bat flips mandatory.", icon: "CircleDot", matchupId: "matchup-wiffle-ball" },
       { time: "4:00 PM", title: "Gaga + Cornhole", desc: "4v4 gaga in the pit. 2v2 cornhole on the boards. Run in parallel — pick separate reps for each.", icon: "Octagon", matchupId: "matchup-gaga" },
@@ -266,7 +266,6 @@ export const EVENTS: CampEvent[] = [
   },
   // Saturday morning ────────────────────────────────────────────────────────
   { id: "long-run", name: "The Long Run", icon: "Footprints", tier: "Bonus", format: "+2 points per mile run Saturday. One designated runner per tribe. Strava receipts mandatory." },
-  { id: "uno", name: "Uno", icon: "Layers", tier: "Side", format: "Stacking is legal. Friendships are not." },
   { id: "knockout", name: "Knockout", icon: "Zap", tier: "Major", format: "Basketball line-up game. 4 reps per tribe. Last shooter standing wins." },
   { id: "tug-of-war", name: "Tug of War", icon: "Anchor", tier: "Major", format: "Single-elim bracket. Cleats highly encouraged." },
   // Saturday Skills Block ───────────────────────────────────────────────────
@@ -275,8 +274,7 @@ export const EVENTS: CampEvent[] = [
   { id: "beer-mile", name: "Beer Mile", icon: "Beer", tier: "Major", format: "Skills Block, Saturday morning. Four laps, four beers. One champion per tribe." },
   { id: "dodgeball", name: "Dodgeball", icon: "Bomb", tier: "Major", format: "Single-elim, 1v3 / 2v4 semis, then bronze + final. No headshots." },
   // Saturday afternoon ──────────────────────────────────────────────────────
-  { id: "chess", name: "Chess", icon: "Crown", tier: "Side", format: "Speed chess, 5-minute clock. Talking allowed." },
-  { id: "cards", name: "Cards", icon: "Spade", tier: "Side", format: "Dealer's choice. Money on the line." },
+  { id: "uno", name: "Uno", icon: "Layers", tier: "Side", format: "Lunch-table tournament. Stacking is legal. Friendships are not." },
   { id: "base-relay", name: "Base Relay", icon: "Footprints", tier: "Minor", format: "Every camper runs the bases. Lowest cumulative tribe time wins." },
   { id: "wiffle-ball", name: "Wiffle Ball", icon: "CircleDot", tier: "Major", format: "Round robin to final. Bat flips mandatory." },
   { id: "gaga", name: "Gaga", icon: "Octagon", tier: "Major", format: "4 v 4. Round robin in the pit. Last tribe with a player standing wins each match." },
@@ -751,7 +749,7 @@ export interface ScoreTier {
 export const SCORING: ScoreTier[] = [
   { id: "major", label: "Major Events", points: [100, 70, 40, 20], note: "Flip Cup · Knockout · Tug of War · Beer Mile · Dodgeball · Wiffle Ball · Gaga" },
   { id: "minor", label: "Minor Events", points: [60, 40, 25, 15], note: "Free Throws · Football · Relay · Cornhole" },
-  { id: "side", label: "Side Games", points: [30, 20, 10, 5], note: "Uno · Chess · Cards" },
+  { id: "side", label: "Side Games", points: [30, 20, 10, 5], note: "Uno (lunch-table tournament)" },
 ];
 
 export const PLACE_LABELS = ["1st", "2nd", "3rd", "4th"];
