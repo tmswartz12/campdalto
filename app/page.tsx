@@ -4,7 +4,6 @@ import Mission from "@/components/sections/Mission";
 import Teams from "@/components/sections/Teams";
 import Events from "@/components/sections/Events";
 import Scoring from "@/components/sections/Scoring";
-import ChugOff from "@/components/sections/ChugOff";
 import Wig from "@/components/sections/Wig";
 import CigChallenge from "@/components/sections/CigChallenge";
 import Scoreboard from "@/components/sections/Scoreboard";
@@ -22,7 +21,6 @@ export default function Home() {
       <Teams />
       <Events />
       <Scoring />
-      <ChugOff />
       <Wig />
       <CigChallenge />
       <Scoreboard />
